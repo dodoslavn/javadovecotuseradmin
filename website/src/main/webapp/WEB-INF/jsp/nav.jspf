@@ -1,0 +1,23 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%-- Relies on the including page having already declared "Messages msgs" before this include --%>
+<nav id="mainnav">
+    <div class="nav-brand"><img src="${pageContext.request.contextPath}/assets/logo.svg" alt="logo" height="28"> <%= msgs.get("app.title") %></div>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('mainnav').classList.toggle('open')">&#9776;</button>
+    <ul class="nav-links">
+        <li><a href="${pageContext.request.contextPath}/my-accounts"><%= msgs.get("nav.myAccounts") %></a></li>
+        <% if ("ADMIN".equals(session.getAttribute("webAccountRole"))) { %>
+            <li><a href="${pageContext.request.contextPath}/admin/web-accounts"><%= msgs.get("nav.webAccounts") %></a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/dovecot-accounts"><%= msgs.get("nav.mailAccounts") %></a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/links"><%= msgs.get("nav.links") %></a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/audit-log"><%= msgs.get("nav.auditLog") %></a></li>
+            <li><a href="${pageContext.request.contextPath}/admin/server-config"><%= msgs.get("nav.serverConfig") %></a></li>
+        <% } %>
+    </ul>
+    <details class="user-menu nav-links">
+        <summary title="${sessionScope.webAccountUsername}">${sessionScope.webAccountUsername} <span class="badge">${sessionScope.webAccountRole}</span></summary>
+        <div class="user-menu-panel">
+            <a href="${pageContext.request.contextPath}/account" class="user-menu-link"><%= msgs.get("nav.account") %></a>
+            <a href="${pageContext.request.contextPath}/logout" class="user-menu-logout"><%= msgs.get("nav.logout") %></a>
+        </div>
+    </details>
+</nav>

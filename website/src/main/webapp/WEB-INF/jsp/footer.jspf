@@ -1,0 +1,8 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%-- Relies on the including page having already declared "Messages msgs" before this include --%>
+<footer>
+    <div class="footer-inner">
+        <span class="footer-brand"><%= msgs.get("app.title") %> - <span class="footer-version">v<%= msgs.get("app.version") %></span></span>
+    </div>
+</footer>
+</body></html>

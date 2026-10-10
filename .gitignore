@@ -1,0 +1,3 @@
+website/build/
+website/javaDovecotAdmin.war
+website/src/main/webapp/WEB-INF/lib/*.jar
