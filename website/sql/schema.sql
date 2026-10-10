@@ -47,3 +47,15 @@ CREATE TABLE audit_log (
     at                    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (actor_web_account_id) REFERENCES web_accounts(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
+
+-- Tracks which version of this schema is installed. SchemaInstaller.java checks this on
+-- every app startup (once DB credentials exist) and runs any pending migrations
+-- automatically — see SchemaInstaller.CURRENT_VERSION. A fresh install just seeds this
+-- directly at the current version rather than replaying history.
+CREATE TABLE schema_version (
+    id         TINYINT PRIMARY KEY DEFAULT 1,
+    version    INT NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT single_row CHECK (id = 1)
+) ENGINE=InnoDB;
+INSERT INTO schema_version (id, version) VALUES (1, 1);

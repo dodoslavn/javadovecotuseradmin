@@ -1,18 +1,27 @@
 package eu.fordo.mailadmin.service;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Idempotent schema creation for the setup wizard — mirrors sql/schema.sql (minus the
- * CREATE DATABASE line; the wizard connects to an already-created database by that point).
- * Safe to run against a brand-new empty database or an already-installed one: every
- * statement is IF NOT EXISTS, so a previous installation's data is never touched.
+ * Idempotent schema creation AND versioned migration, run both by the setup wizard (fresh
+ * install) and on every app startup (AppStartupListener) once DB credentials exist — so
+ * upgrading to a new WAR version with schema changes just means restarting Tomcat with the
+ * new version, no manual ALTER TABLE required.
+ *
+ * To ship a schema change: bump CURRENT_VERSION and add a case to runMigration() for the new
+ * number. Existing installs get migrated step by step from whatever version they're on up to
+ * CURRENT_VERSION; a brand-new install just gets the base tables below (already at the latest
+ * shape) and has its version row seeded directly, skipping the migration steps entirely.
  */
 public final class SchemaInstaller {
 
-    private static final String[] STATEMENTS = {
+    /** Bump this and add a case in runMigration() whenever the schema changes. */
+    public static final int CURRENT_VERSION = 1;
+
+    private static final String[] BASE_TABLES = {
             """
             CREATE TABLE IF NOT EXISTS web_accounts (
                 id            BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -54,6 +63,14 @@ public final class SchemaInstaller {
                 at                    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (actor_web_account_id) REFERENCES web_accounts(id) ON DELETE SET NULL
             ) ENGINE=InnoDB
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS schema_version (
+                id         TINYINT PRIMARY KEY DEFAULT 1,
+                version    INT NOT NULL,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                CONSTRAINT single_row CHECK (id = 1)
+            ) ENGINE=InnoDB
             """
     };
 
@@ -61,15 +78,51 @@ public final class SchemaInstaller {
 
     public static void ensureSchema(Connection conn) throws SQLException {
         try (Statement st = conn.createStatement()) {
-            for (String sql : STATEMENTS) {
+            for (String sql : BASE_TABLES) {
                 st.execute(sql);
             }
+        }
+
+        Integer storedVersion = readVersion(conn);
+        if (storedVersion == null) {
+            // Fresh install, or an existing install from before version tracking existed —
+            // either way the base tables just created above are already at CURRENT_VERSION's
+            // shape, so seed directly rather than replaying migrations against them.
+            setVersion(conn, CURRENT_VERSION);
+        } else if (storedVersion < CURRENT_VERSION) {
+            int version = storedVersion;
+            while (version < CURRENT_VERSION) {
+                version++;
+                runMigration(conn, version);
+                setVersion(conn, version);
+            }
+        }
+    }
+
+    private static void runMigration(Connection conn, int toVersion) throws SQLException {
+        switch (toVersion) {
+            // case 2 -> { try (Statement st = conn.createStatement()) { st.execute("ALTER TABLE ..."); } }
+            default -> throw new IllegalStateException("No migration defined for schema version " + toVersion);
+        }
+    }
+
+    private static Integer readVersion(Connection conn) throws SQLException {
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery("SELECT version FROM schema_version WHERE id = 1")) {
+            return rs.next() ? rs.getInt(1) : null;
+        }
+    }
+
+    private static void setVersion(Connection conn, int version) throws SQLException {
+        try (Statement st = conn.createStatement()) {
+            st.execute("INSERT INTO schema_version (id, version) VALUES (1, " + version + ") " +
+                    "ON DUPLICATE KEY UPDATE version = " + version);
         }
     }
 
     public static boolean hasAnyWebAccount(Connection conn) throws SQLException {
         try (Statement st = conn.createStatement();
-             var rs = st.executeQuery("SELECT COUNT(*) FROM web_accounts")) {
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM web_accounts")) {
             rs.next();
             return rs.getLong(1) > 0;
         }

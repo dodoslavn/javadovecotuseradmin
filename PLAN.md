@@ -23,6 +23,7 @@ separate agent later. This repo covers the website only; the sync agent is a def
 - **Pairing** — the underlying table (`web_account_dovecot_account`) is many-to-many, but there's no dedicated "links" page — each mail account on the Emails page has a single dropdown picking the one web account it's paired with (`LinkDao.setPairing()` clears any prior pairing for that mail account before setting the new one, so the UI's "one at a time" model holds even though the schema itself doesn't enforce it)
 - **Server config lives in a file, not the database** — `/etc/mailadmin/config.properties` holds DB, RabbitMQ, and Sentry settings. DB settings are host-file-only (the app can't safely rewrite its own DB credentials before it can connect); RabbitMQ settings are additionally editable from the admin UI, writing back to that same file via an in-place line rewrite (comments and other keys preserved)
 - **First-run setup wizard** — if DB credentials aren't in the config file, every request redirects to `/setup`: choose a DB name, get shown the exact `mysql`/`mkdir` commands to run, confirm connection details, and either adopt an existing installation's data untouched or create the first admin account
+- **Schema versioning** — a single-row `schema_version` table tracks the installed schema version. `SchemaInstaller.ensureSchema()` runs on every app startup (`AppStartupListener`, once DB credentials exist) as well as during setup, and applies any pending migrations automatically. Upgrading to a new WAR version with schema changes is just: bump `SchemaInstaller.CURRENT_VERSION`, add a `case` to `runMigration()`, deploy, restart Tomcat — no manual `ALTER TABLE` needed on the live database
 - **Audit log** — every mutating action is recorded with actor/action/target, but never a password or hash value
 - **Mail-sync plan (deferred)** — RabbitMQ carries only a lightweight "something changed" signal (never account data), an agent on the mail server debounces it, pulls the current account list over an authenticated HTTPS API, and atomically regenerates `passdb` — see the architecture discussion for the full design; not implemented in this repo yet
 
@@ -74,6 +75,7 @@ web_accounts                 (id, username, password_hash, role, enabled, create
 dovecot_accounts              (id, username, password_hash, status, created_at, updated_at)   -- username is the full address (user@domain); no separate domain column
 web_account_dovecot_account   (web_account_id, dovecot_account_id, created_at)   -- many-to-many
 audit_log                     (id, actor_web_account_id, action, target_type, target_id, detail, at)
+schema_version                 (id, version, updated_at)   -- single row; see "Schema versioning" above
 ```
 RabbitMQ and DB connection settings are **not** stored in the database — see `/etc/mailadmin/config.properties` and the "Server configuration" admin page.
 
