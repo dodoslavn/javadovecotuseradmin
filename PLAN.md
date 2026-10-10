@@ -72,7 +72,7 @@ javaDovecotAdmin/
 ## Database Schema
 ```sql
 web_accounts                 (id, username, password_hash, role, enabled, created_at)
-dovecot_accounts              (id, domain, username, password_hash, uid, gid, home_dir, status, created_at, updated_at)
+dovecot_accounts              (id, domain, username, password_hash, status, created_at, updated_at)
 web_account_dovecot_account   (web_account_id, dovecot_account_id, created_at)   -- many-to-many
 audit_log                     (id, actor_web_account_id, action, target_type, target_id, detail, at)
 ```

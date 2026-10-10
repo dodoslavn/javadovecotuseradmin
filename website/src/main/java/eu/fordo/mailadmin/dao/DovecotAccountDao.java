@@ -67,17 +67,14 @@ public class DovecotAccountDao {
         }
     }
 
-    public long create(String domain, String username, String passwordHash, int uid, int gid, String homeDir) throws SQLException {
-        String sql = "INSERT INTO dovecot_accounts (domain, username, password_hash, uid, gid, home_dir, status) " +
-                "VALUES (?, ?, ?, ?, ?, ?, 'active')";
+    public long create(String domain, String username, String passwordHash) throws SQLException {
+        String sql = "INSERT INTO dovecot_accounts (domain, username, password_hash, status) " +
+                "VALUES (?, ?, ?, 'active')";
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, domain);
             ps.setString(2, username);
             ps.setString(3, passwordHash);
-            ps.setInt(4, uid);
-            ps.setInt(5, gid);
-            ps.setString(6, homeDir);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 keys.next();
@@ -112,9 +109,6 @@ public class DovecotAccountDao {
         a.setDomain(rs.getString("domain"));
         a.setUsername(rs.getString("username"));
         a.setPasswordHash(rs.getString("password_hash"));
-        a.setUid(rs.getInt("uid"));
-        a.setGid(rs.getInt("gid"));
-        a.setHomeDir(rs.getString("home_dir"));
         a.setStatus(rs.getString("status"));
         a.setCreatedAt(rs.getTimestamp("created_at").toInstant());
         a.setUpdatedAt(rs.getTimestamp("updated_at").toInstant());

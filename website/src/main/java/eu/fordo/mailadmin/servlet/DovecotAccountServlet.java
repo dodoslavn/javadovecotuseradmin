@@ -67,9 +67,6 @@ public class DovecotAccountServlet extends HttpServlet {
         String domain = req.getParameter("domain");
         String username = req.getParameter("username");
         String password = req.getParameter("password");
-        int uid = Integer.parseInt(req.getParameter("uid"));
-        int gid = Integer.parseInt(req.getParameter("gid"));
-        String homeDir = req.getParameter("homeDir");
 
         Optional<DovecotAccount> existing = dovecotAccountDao.findAll().stream()
                 .filter(a -> a.getDomain().equals(domain) && a.getUsername().equals(username))
@@ -80,7 +77,7 @@ public class DovecotAccountServlet extends HttpServlet {
         }
 
         String hash = passwordService.hashDovecotPassword(password);
-        long id = dovecotAccountDao.create(domain, username, hash, uid, gid, homeDir);
+        long id = dovecotAccountDao.create(domain, username, hash);
         auditService.record(req, "dovecot_account_created", "dovecot_account", id, "domain=" + domain + " username=" + username);
     }
 

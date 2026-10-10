@@ -22,9 +22,6 @@
             <tr>
                 <th><%= msgs.get("mailAccounts.col.domain") %></th>
                 <th><%= msgs.get("mailAccounts.col.username") %></th>
-                <th><%= msgs.get("mailAccounts.col.uid") %></th>
-                <th><%= msgs.get("mailAccounts.col.gid") %></th>
-                <th><%= msgs.get("mailAccounts.col.home") %></th>
                 <th><%= msgs.get("mailAccounts.col.status") %></th>
                 <th><%= msgs.get("mailAccounts.col.actions") %></th>
             </tr>
@@ -36,9 +33,6 @@
             <tr<%= active ? "" : " class=\"row-disabled\"" %>>
                 <td><%= a.getDomain() %></td>
                 <td><%= a.getUsername() %></td>
-                <td><%= a.getUid() %></td>
-                <td><%= a.getGid() %></td>
-                <td><%= a.getHomeDir() %></td>
                 <td><span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span></td>
                 <td>
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
@@ -68,12 +62,6 @@
                 <input type="text" name="username" placeholder="user@example.com" required></label>
             <label><%= msgs.get("mailAccounts.create.password") %>
                 <input type="password" name="password" required></label>
-            <label><%= msgs.get("mailAccounts.create.uid") %>
-                <input type="number" name="uid" value="5000" required></label>
-            <label><%= msgs.get("mailAccounts.create.gid") %>
-                <input type="number" name="gid" value="5000" required></label>
-            <label><%= msgs.get("mailAccounts.create.homeDir") %>
-                <input type="text" name="homeDir" placeholder="/var/mail/vhosts/example.com/user" required></label>
             <button type="submit"><%= msgs.get("mailAccounts.create.submit") %></button>
         </form>
     </div>
