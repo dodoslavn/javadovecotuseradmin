@@ -89,7 +89,7 @@ RabbitMQ and DB connection settings are **not** stored in the database — see `
 - Website login passwords use bcrypt, entirely separate from the Dovecot hashing path — never cross-used
 - No plaintext password is ever stored in the database or written to a log; the audit log records actions, never secret values (RabbitMQ password included)
 - A `USER` role can only ever touch the Dovecot account(s) explicitly linked to their own web account — every self-service action re-checks the link, not just the session
-- An admin cannot disable their own web account (`webAccounts.error.selfDisable`)
+- An admin cannot disable their own web account (`webAccounts.error.selfDisable`) or change their own role (`webAccounts.error.selfRoleChange`) — both would risk locking the only admin out
 - `/etc/mailadmin/config.properties` is `root:tomcat`, mode `660`/`2770` — readable and (for the RabbitMQ section only) writable by the Tomcat process, nothing else
 - Tomcat's systemd unit keeps `ProtectSystem=strict`; only `/etc/mailadmin` is carved out via `ReadWritePaths`
 

@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List, eu.fordo.mailadmin.model.WebAccount, eu.fordo.mailadmin.service.Messages, eu.fordo.mailadmin.service.DateFormatter" %>
+<%@ page import="java.util.List, eu.fordo.mailadmin.model.WebAccount, eu.fordo.mailadmin.model.Role, eu.fordo.mailadmin.service.Messages, eu.fordo.mailadmin.service.DateFormatter" %>
 <% Messages msgs = Messages.of(request); %>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,8 +31,24 @@
                 for (WebAccount a : accounts) {
             %>
             <tr<%= a.isEnabled() ? "" : " class=\"row-disabled\"" %>>
-                <td><%= a.getUsername() %></td>
-                <td><span class="badge"><%= a.getRole() %></span></td>
+                <td>
+                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
+                        <input type="hidden" name="action" value="rename">
+                        <input type="hidden" name="id" value="<%= a.getId() %>">
+                        <input type="text" name="newUsername" value="<%= a.getUsername() %>" style="width:10em;">
+                        <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.rename") %></button>
+                    </form>
+                </td>
+                <td>
+                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
+                        <input type="hidden" name="action" value="changeRole">
+                        <input type="hidden" name="id" value="<%= a.getId() %>">
+                        <select name="role" onchange="this.form.submit()">
+                            <option value="USER" <%= a.getRole() == Role.USER ? "selected" : "" %>>USER</option>
+                            <option value="ADMIN" <%= a.getRole() == Role.ADMIN ? "selected" : "" %>>ADMIN</option>
+                        </select>
+                    </form>
+                </td>
                 <td><span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span></td>
                 <td><%= DateFormatter.format(a.getCreatedAt()) %></td>
                 <td>
@@ -45,6 +61,12 @@
                             <input type="hidden" name="action" value="enable">
                             <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.enable") %></button>
                         <% } %>
+                    </form>
+                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts" style="margin-top:.35rem;">
+                        <input type="hidden" name="action" value="resetPassword">
+                        <input type="hidden" name="id" value="<%= a.getId() %>">
+                        <input type="password" name="newPassword" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8" style="width:9em;">
+                        <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.resetPassword") %></button>
                     </form>
                 </td>
             </tr>

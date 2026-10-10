@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-/** Admin-only: list/create/enable/disable website login accounts. */
+/** Admin-only: list/create/enable/disable website login accounts, reset their password, change their role, or rename them. */
 @WebServlet("/admin/web-accounts")
 public class WebAccountServlet extends HttpServlet {
 
@@ -44,10 +44,6 @@ public class WebAccountServlet extends HttpServlet {
         try {
             if ("create".equals(action)) {
                 create(req);
-                if (req.getAttribute("errorKey") != null) {
-                    doGet(req, resp); // re-render the list with the error instead of losing it on redirect
-                    return;
-                }
             } else if ("disable".equals(action)) {
                 long id = Long.parseLong(req.getParameter("id"));
                 if (id == SessionUtil.currentWebAccountId(req)) {
@@ -58,6 +54,19 @@ public class WebAccountServlet extends HttpServlet {
                 setEnabled(req, false);
             } else if ("enable".equals(action)) {
                 setEnabled(req, true);
+            } else if ("resetPassword".equals(action)) {
+                resetPassword(req);
+            } else if ("changeRole".equals(action)) {
+                changeRole(req, resp);
+                if (req.getAttribute("errorKey") != null) {
+                    return; // changeRole already re-rendered on failure
+                }
+            } else if ("rename".equals(action)) {
+                rename(req);
+            }
+            if (req.getAttribute("errorKey") != null) {
+                doGet(req, resp); // re-render the list with the error instead of losing it on redirect
+                return;
             }
         } catch (SQLException e) {
             SentryReporter.captureException(e);
@@ -86,5 +95,47 @@ public class WebAccountServlet extends HttpServlet {
         long id = Long.parseLong(req.getParameter("id"));
         webAccountDao.setEnabled(id, enabled);
         auditService.record(req, enabled ? "web_account_enabled" : "web_account_disabled", "web_account", id, null);
+    }
+
+    private void resetPassword(HttpServletRequest req) throws SQLException {
+        long id = Long.parseLong(req.getParameter("id"));
+        String newPassword = req.getParameter("newPassword");
+        if (newPassword == null || newPassword.length() < 8) {
+            req.setAttribute("errorKey", "webAccounts.error.passwordTooShort");
+            return;
+        }
+        webAccountDao.updatePasswordHash(id, passwordService.hashWebPassword(newPassword));
+        auditService.record(req, "web_account_password_reset", "web_account", id, "by admin");
+    }
+
+    private void changeRole(HttpServletRequest req, HttpServletResponse resp) throws SQLException, ServletException, IOException {
+        long id = Long.parseLong(req.getParameter("id"));
+        if (id == SessionUtil.currentWebAccountId(req)) {
+            req.setAttribute("errorKey", "webAccounts.error.selfRoleChange");
+            doGet(req, resp);
+            return;
+        }
+        Role role = Role.valueOf(req.getParameter("role"));
+        webAccountDao.setRole(id, role);
+        auditService.record(req, "web_account_role_changed", "web_account", id, "role=" + role);
+    }
+
+    private void rename(HttpServletRequest req) throws SQLException {
+        long id = Long.parseLong(req.getParameter("id"));
+        String newUsername = req.getParameter("newUsername");
+        if (newUsername == null || newUsername.isBlank()) {
+            req.setAttribute("errorKey", "webAccounts.error.usernameRequired");
+            return;
+        }
+        newUsername = newUsername.trim();
+
+        Optional<WebAccount> existing = webAccountDao.findByUsername(newUsername);
+        if (existing.isPresent() && existing.get().getId() != id) {
+            req.setAttribute("errorKey", "webAccounts.error.duplicate");
+            return;
+        }
+
+        webAccountDao.setUsername(id, newUsername);
+        auditService.record(req, "web_account_renamed", "web_account", id, "newUsername=" + newUsername);
     }
 }

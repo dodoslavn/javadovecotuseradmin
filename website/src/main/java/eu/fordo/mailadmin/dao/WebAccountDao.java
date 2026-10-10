@@ -84,6 +84,26 @@ public class WebAccountDao {
         }
     }
 
+    public void setRole(long id, Role role) throws SQLException {
+        String sql = "UPDATE web_accounts SET role = ? WHERE id = ?";
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, role.name());
+            ps.setLong(2, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public void setUsername(long id, String username) throws SQLException {
+        String sql = "UPDATE web_accounts SET username = ? WHERE id = ?";
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setLong(2, id);
+            ps.executeUpdate();
+        }
+    }
+
     private WebAccount map(ResultSet rs) throws SQLException {
         WebAccount a = new WebAccount();
         a.setId(rs.getLong("id"));
