@@ -26,13 +26,11 @@ public final class SchemaInstaller {
             """
             CREATE TABLE IF NOT EXISTS dovecot_accounts (
                 id            BIGINT PRIMARY KEY AUTO_INCREMENT,
-                domain        VARCHAR(100) NOT NULL,
-                username      VARCHAR(190) NOT NULL,
+                username      VARCHAR(190) NOT NULL UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 status        ENUM('active', 'disabled') NOT NULL DEFAULT 'active',
                 created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                UNIQUE KEY uq_domain_username (domain, username)
+                updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             ) ENGINE=InnoDB
             """,
             """

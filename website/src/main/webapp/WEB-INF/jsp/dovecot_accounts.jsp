@@ -20,7 +20,6 @@
         <div class="table-wrap">
         <table>
             <tr>
-                <th><%= msgs.get("mailAccounts.col.domain") %></th>
                 <th><%= msgs.get("mailAccounts.col.username") %></th>
                 <th><%= msgs.get("mailAccounts.col.status") %></th>
                 <th><%= msgs.get("mailAccounts.col.pairedWith") %></th>
@@ -35,7 +34,6 @@
                     Long pairedWebAccountId = pairings.get(a.getId());
             %>
             <tr<%= active ? "" : " class=\"row-disabled\"" %>>
-                <td><%= a.getDomain() %></td>
                 <td><%= a.getUsername() %></td>
                 <td><span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span></td>
                 <td>
@@ -72,8 +70,6 @@
         <h3><%= msgs.get("mailAccounts.create.legend") %></h3>
         <form method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts" class="form-grid">
             <input type="hidden" name="action" value="create">
-            <label><%= msgs.get("mailAccounts.create.domain") %>
-                <input type="text" name="domain" placeholder="mail-host-1" required></label>
             <label><%= msgs.get("mailAccounts.create.username") %>
                 <input type="text" name="username" placeholder="user@example.com" required></label>
             <label><%= msgs.get("mailAccounts.create.password") %>

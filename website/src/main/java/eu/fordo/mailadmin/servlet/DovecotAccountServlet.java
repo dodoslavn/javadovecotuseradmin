@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /** Admin-only: list/create/disable Dovecot mail accounts, and pair each one to a web account. */
 @WebServlet("/admin/dovecot-accounts")
@@ -76,21 +75,17 @@ public class DovecotAccountServlet extends HttpServlet {
     }
 
     private void create(HttpServletRequest req) throws SQLException, IOException, InterruptedException {
-        String domain = req.getParameter("domain");
         String username = req.getParameter("username");
         String password = req.getParameter("password");
 
-        Optional<DovecotAccount> existing = dovecotAccountDao.findAll().stream()
-                .filter(a -> a.getDomain().equals(domain) && a.getUsername().equals(username))
-                .findFirst();
-        if (existing.isPresent()) {
+        if (dovecotAccountDao.findByUsername(username).isPresent()) {
             req.setAttribute("errorKey", "mailAccounts.error.duplicate");
             return;
         }
 
         String hash = passwordService.hashDovecotPassword(password);
-        long id = dovecotAccountDao.create(domain, username, hash);
-        auditService.record(req, "dovecot_account_created", "dovecot_account", id, "domain=" + domain + " username=" + username);
+        long id = dovecotAccountDao.create(username, hash);
+        auditService.record(req, "dovecot_account_created", "dovecot_account", id, "username=" + username);
     }
 
     private void setStatus(HttpServletRequest req, String status) throws SQLException {

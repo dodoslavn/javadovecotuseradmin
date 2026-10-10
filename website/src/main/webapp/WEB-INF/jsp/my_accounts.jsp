@@ -25,7 +25,7 @@
             boolean active = "active".equals(a.getStatus());
     %>
         <div class="section">
-            <h3><%= a.getUsername() %> (<%= a.getDomain() %>) <span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span></h3>
+            <h3><%= a.getUsername() %> <span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span></h3>
 
             <form method="post" action="${pageContext.request.contextPath}/my-accounts" class="form-grid">
                 <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">

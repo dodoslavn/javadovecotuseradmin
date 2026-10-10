@@ -12,17 +12,16 @@ CREATE TABLE web_accounts (
 ) ENGINE=InnoDB;
 
 -- Mirrors the real Dovecot passdb-file format this app targets: just "username:password".
--- No uid/gid/home — those belong to userdb (often static/shared), not passdb, in a typical
--- Dovecot setup, so they have no home here either.
+-- No uid/gid/home (see below) — and no separate domain column either: username is expected
+-- to already be the full address (user@domain), so a domain column would just duplicate
+-- what's parseable from username.
 CREATE TABLE dovecot_accounts (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT,
-    domain        VARCHAR(100) NOT NULL,
-    username      VARCHAR(190) NOT NULL,
+    username      VARCHAR(190) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     status        ENUM('active', 'disabled') NOT NULL DEFAULT 'active',
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_domain_username (domain, username)
+    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE web_account_dovecot_account (

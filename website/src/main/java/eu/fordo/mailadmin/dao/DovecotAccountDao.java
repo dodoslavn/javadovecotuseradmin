@@ -14,7 +14,7 @@ import java.util.Optional;
 public class DovecotAccountDao {
 
     public List<DovecotAccount> findAll() throws SQLException {
-        String sql = "SELECT * FROM dovecot_accounts ORDER BY domain, username";
+        String sql = "SELECT * FROM dovecot_accounts ORDER BY username";
         List<DovecotAccount> result = new ArrayList<>();
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql);
@@ -29,7 +29,7 @@ public class DovecotAccountDao {
     public List<DovecotAccount> findLinkedToWebAccount(long webAccountId) throws SQLException {
         String sql = "SELECT da.* FROM dovecot_accounts da " +
                 "JOIN web_account_dovecot_account link ON link.dovecot_account_id = da.id " +
-                "WHERE link.web_account_id = ? ORDER BY da.domain, da.username";
+                "WHERE link.web_account_id = ? ORDER BY da.username";
         List<DovecotAccount> result = new ArrayList<>();
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
@@ -54,6 +54,17 @@ public class DovecotAccountDao {
         }
     }
 
+    public Optional<DovecotAccount> findByUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM dovecot_accounts WHERE username = ?";
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(map(rs)) : Optional.empty();
+            }
+        }
+    }
+
     /** True if the given web account is linked to the given dovecot account — used for self-service access checks. */
     public boolean isLinked(long webAccountId, long dovecotAccountId) throws SQLException {
         String sql = "SELECT 1 FROM web_account_dovecot_account WHERE web_account_id = ? AND dovecot_account_id = ?";
@@ -67,14 +78,13 @@ public class DovecotAccountDao {
         }
     }
 
-    public long create(String domain, String username, String passwordHash) throws SQLException {
-        String sql = "INSERT INTO dovecot_accounts (domain, username, password_hash, status) " +
-                "VALUES (?, ?, ?, 'active')";
+    public long create(String username, String passwordHash) throws SQLException {
+        String sql = "INSERT INTO dovecot_accounts (username, password_hash, status) " +
+                "VALUES (?, ?, 'active')";
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, domain);
-            ps.setString(2, username);
-            ps.setString(3, passwordHash);
+            ps.setString(1, username);
+            ps.setString(2, passwordHash);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 keys.next();
@@ -106,7 +116,6 @@ public class DovecotAccountDao {
     private DovecotAccount map(ResultSet rs) throws SQLException {
         DovecotAccount a = new DovecotAccount();
         a.setId(rs.getLong("id"));
-        a.setDomain(rs.getString("domain"));
         a.setUsername(rs.getString("username"));
         a.setPasswordHash(rs.getString("password_hash"));
         a.setStatus(rs.getString("status"));

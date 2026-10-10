@@ -1,9 +1,8 @@
 # javaDovecotAdmin — Project Plan
 
 ## Goal
-A web UI to manage Dovecot mail accounts across one or more independent mail servers (any
-number of domains/hosts — "domain" is a free-text field, not a fixed enum), without the mail
-servers themselves depending on a database — they keep reading local flat
+A web UI to manage Dovecot mail accounts across one or more independent mail servers, without
+the mail servers themselves depending on a database — they keep reading local flat
 files (`/etc/dovecot/passdb`), synced down by a separate agent later. This repo covers the
 website only; the sync agent is a deferred phase (see below).
 
@@ -72,7 +71,7 @@ javaDovecotAdmin/
 ## Database Schema
 ```sql
 web_accounts                 (id, username, password_hash, role, enabled, created_at)
-dovecot_accounts              (id, domain, username, password_hash, status, created_at, updated_at)
+dovecot_accounts              (id, username, password_hash, status, created_at, updated_at)   -- username is the full address (user@domain); no separate domain column
 web_account_dovecot_account   (web_account_id, dovecot_account_id, created_at)   -- many-to-many
 audit_log                     (id, actor_web_account_id, action, target_type, target_id, detail, at)
 ```
@@ -95,4 +94,4 @@ RabbitMQ and DB connection settings are **not** stored in the database — see `
 - Tomcat's systemd unit keeps `ProtectSystem=strict`; only `/etc/mailadmin` is carved out via `ReadWritePaths`
 
 ## Deferred
-RabbitMQ change-signal publishing, the per-mail-host Python sync agent, atomic `passdb` file regeneration, Dovecot reload. Config storage for RabbitMQ is already in place; the agent and publisher are not built yet.
+RabbitMQ change-signal publishing, the per-mail-host Python sync agent, atomic `passdb` file regeneration, Dovecot reload. Config storage for RabbitMQ is already in place; the agent and publisher are not built yet. Note: `dovecot_accounts` no longer has a host/domain field (removed — it looked redundant with `username` already being a full address, and in practice always matched it 1:1). If a second real mail server is ever added, that sync phase will need *some* way to know which host each account's passdb line belongs to — revisit then, e.g. a host field reintroduced at that point, or one DB per host.
