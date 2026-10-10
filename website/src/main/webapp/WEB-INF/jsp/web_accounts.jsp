@@ -19,6 +19,7 @@
     <div class="section">
         <div class="table-wrap">
         <table>
+            <thead>
             <tr>
                 <th><%= msgs.get("webAccounts.col.username") %></th>
                 <th><%= msgs.get("webAccounts.col.role") %></th>
@@ -26,20 +27,22 @@
                 <th><%= msgs.get("webAccounts.col.created") %></th>
                 <th><%= msgs.get("webAccounts.col.actions") %></th>
             </tr>
+            </thead>
+            <tbody>
             <%
                 List<WebAccount> accounts = (List<WebAccount>) request.getAttribute("accounts");
                 for (WebAccount a : accounts) {
             %>
             <tr<%= a.isEnabled() ? "" : " class=\"row-disabled\"" %>>
-                <td>
+                <td data-label="<%= msgs.get("webAccounts.col.username") %>">
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
                         <input type="hidden" name="action" value="rename">
                         <input type="hidden" name="id" value="<%= a.getId() %>">
-                        <input type="text" name="newUsername" value="<%= a.getUsername() %>" style="width:10em;">
+                        <input type="text" name="newUsername" value="<%= a.getUsername() %>">
                         <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.rename") %></button>
                     </form>
                 </td>
-                <td>
+                <td data-label="<%= msgs.get("webAccounts.col.role") %>">
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
                         <input type="hidden" name="action" value="changeRole">
                         <input type="hidden" name="id" value="<%= a.getId() %>">
@@ -49,9 +52,9 @@
                         </select>
                     </form>
                 </td>
-                <td><span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span></td>
-                <td><%= DateFormatter.format(a.getCreatedAt()) %></td>
-                <td>
+                <td data-label="<%= msgs.get("webAccounts.col.enabled") %>"><span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span></td>
+                <td data-label="<%= msgs.get("webAccounts.col.created") %>"><%= DateFormatter.format(a.getCreatedAt()) %></td>
+                <td data-label="<%= msgs.get("webAccounts.col.actions") %>">
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
                         <input type="hidden" name="id" value="<%= a.getId() %>">
                         <% if (a.isEnabled()) { %>
@@ -65,12 +68,13 @@
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts" style="margin-top:.35rem;">
                         <input type="hidden" name="action" value="resetPassword">
                         <input type="hidden" name="id" value="<%= a.getId() %>">
-                        <input type="password" name="newPassword" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8" style="width:9em;">
+                        <input type="password" name="newPassword" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8">
                         <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.resetPassword") %></button>
                     </form>
                 </td>
             </tr>
             <% } %>
+            </tbody>
         </table>
         </div>
     </div>

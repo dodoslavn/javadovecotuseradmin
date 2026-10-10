@@ -17,6 +17,7 @@
     <div class="section">
         <div class="table-wrap">
         <table>
+            <thead>
             <tr>
                 <th><%= msgs.get("auditLog.col.when") %></th>
                 <th><%= msgs.get("auditLog.col.actor") %></th>
@@ -24,18 +25,21 @@
                 <th><%= msgs.get("auditLog.col.target") %></th>
                 <th><%= msgs.get("auditLog.col.detail") %></th>
             </tr>
+            </thead>
+            <tbody>
             <%
                 List<AuditLogEntry> entries = (List<AuditLogEntry>) request.getAttribute("entries");
                 for (AuditLogEntry e : entries) {
             %>
             <tr>
-                <td><%= DateFormatter.format(e.getAt()) %></td>
-                <td><%= e.getActorUsername() %></td>
-                <td><%= e.getAction() %></td>
-                <td><%= e.getTargetType() %> #<%= e.getTargetId() %></td>
-                <td><%= e.getDetail() %></td>
+                <td data-label="<%= msgs.get("auditLog.col.when") %>"><%= DateFormatter.format(e.getAt()) %></td>
+                <td data-label="<%= msgs.get("auditLog.col.actor") %>"><%= e.getActorUsername() %></td>
+                <td data-label="<%= msgs.get("auditLog.col.action") %>"><%= e.getAction() %></td>
+                <td data-label="<%= msgs.get("auditLog.col.target") %>"><%= e.getTargetType() %> #<%= e.getTargetId() %></td>
+                <td data-label="<%= msgs.get("auditLog.col.detail") %>"><%= e.getDetail() %></td>
             </tr>
             <% } %>
+            </tbody>
         </table>
         </div>
     </div>

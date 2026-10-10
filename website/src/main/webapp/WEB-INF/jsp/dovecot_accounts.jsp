@@ -19,12 +19,15 @@
     <div class="section">
         <div class="table-wrap">
         <table>
+            <thead>
             <tr>
                 <th><%= msgs.get("mailAccounts.col.username") %></th>
                 <th><%= msgs.get("mailAccounts.col.status") %></th>
                 <th><%= msgs.get("mailAccounts.col.pairedWith") %></th>
                 <th><%= msgs.get("mailAccounts.col.actions") %></th>
             </tr>
+            </thead>
+            <tbody>
             <%
                 List<DovecotAccount> accounts = (List<DovecotAccount>) request.getAttribute("accounts");
                 List<WebAccount> webAccounts = (List<WebAccount>) request.getAttribute("webAccounts");
@@ -34,9 +37,9 @@
                     Long pairedWebAccountId = pairings.get(a.getId());
             %>
             <tr<%= active ? "" : " class=\"row-disabled\"" %>>
-                <td><%= a.getUsername() %></td>
-                <td><span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span></td>
-                <td>
+                <td data-label="<%= msgs.get("mailAccounts.col.username") %>"><%= a.getUsername() %></td>
+                <td data-label="<%= msgs.get("mailAccounts.col.status") %>"><span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span></td>
+                <td data-label="<%= msgs.get("mailAccounts.col.pairedWith") %>">
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
                         <input type="hidden" name="action" value="pair">
                         <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">
@@ -48,7 +51,7 @@
                         </select>
                     </form>
                 </td>
-                <td>
+                <td data-label="<%= msgs.get("mailAccounts.col.actions") %>">
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
                         <input type="hidden" name="id" value="<%= a.getId() %>">
                         <% if (active) { %>
@@ -62,6 +65,7 @@
                 </td>
             </tr>
             <% } %>
+            </tbody>
         </table>
         </div>
     </div>
