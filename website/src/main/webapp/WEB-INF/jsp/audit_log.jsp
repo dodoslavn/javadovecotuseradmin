@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List, eu.fordo.mailadmin.model.AuditLogEntry, eu.fordo.mailadmin.service.Messages" %>
+<%@ page import="java.util.List, eu.fordo.mailadmin.model.AuditLogEntry, eu.fordo.mailadmin.service.Messages, eu.fordo.mailadmin.service.DateFormatter" %>
 <% Messages msgs = Messages.of(request); %>
 <!DOCTYPE html>
 <html lang="en">
@@ -29,7 +29,7 @@
                 for (AuditLogEntry e : entries) {
             %>
             <tr>
-                <td><%= e.getAt() %></td>
+                <td><%= DateFormatter.format(e.getAt()) %></td>
                 <td><%= e.getActorUsername() %></td>
                 <td><%= e.getAction() %></td>
                 <td><%= e.getTargetType() %> #<%= e.getTargetId() %></td>

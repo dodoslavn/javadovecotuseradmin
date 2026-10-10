@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List, eu.fordo.mailadmin.model.WebAccount, eu.fordo.mailadmin.service.Messages" %>
+<%@ page import="java.util.List, eu.fordo.mailadmin.model.WebAccount, eu.fordo.mailadmin.service.Messages, eu.fordo.mailadmin.service.DateFormatter" %>
 <% Messages msgs = Messages.of(request); %>
 <!DOCTYPE html>
 <html lang="en">
@@ -34,7 +34,7 @@
                 <td><%= a.getUsername() %></td>
                 <td><span class="badge"><%= a.getRole() %></span></td>
                 <td><span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span></td>
-                <td><%= a.getCreatedAt() %></td>
+                <td><%= DateFormatter.format(a.getCreatedAt()) %></td>
                 <td>
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
                         <input type="hidden" name="id" value="<%= a.getId() %>">
