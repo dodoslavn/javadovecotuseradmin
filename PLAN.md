@@ -1,8 +1,9 @@
 # javaDovecotAdmin — Project Plan
 
 ## Goal
-A web UI to manage Dovecot mail accounts for two independent mail servers (different domains),
-without the mail servers themselves depending on a database — they keep reading local flat
+A web UI to manage Dovecot mail accounts across one or more independent mail servers (any
+number of domains/hosts — "domain" is a free-text field, not a fixed enum), without the mail
+servers themselves depending on a database — they keep reading local flat
 files (`/etc/dovecot/passdb`), synced down by a separate agent later. This repo covers the
 website only; the sync agent is a deferred phase (see below).
 

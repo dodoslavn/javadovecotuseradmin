@@ -63,9 +63,9 @@
         <form method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts" class="form-grid">
             <input type="hidden" name="action" value="create">
             <label><%= msgs.get("mailAccounts.create.domain") %>
-                <input type="text" name="domain" placeholder="as2 / ctv_tn" required></label>
+                <input type="text" name="domain" placeholder="mail-host-1" required></label>
             <label><%= msgs.get("mailAccounts.create.username") %>
-                <input type="text" name="username" placeholder="alice@fordo.eu" required></label>
+                <input type="text" name="username" placeholder="user@example.com" required></label>
             <label><%= msgs.get("mailAccounts.create.password") %>
                 <input type="password" name="password" required></label>
             <label><%= msgs.get("mailAccounts.create.uid") %>
@@ -73,7 +73,7 @@
             <label><%= msgs.get("mailAccounts.create.gid") %>
                 <input type="number" name="gid" value="5000" required></label>
             <label><%= msgs.get("mailAccounts.create.homeDir") %>
-                <input type="text" name="homeDir" placeholder="/var/mail/vhosts/fordo.eu/alice" required></label>
+                <input type="text" name="homeDir" placeholder="/var/mail/vhosts/example.com/user" required></label>
             <button type="submit"><%= msgs.get("mailAccounts.create.submit") %></button>
         </form>
     </div>
