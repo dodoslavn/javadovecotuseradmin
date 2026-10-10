@@ -61,6 +61,8 @@ public class DovecotAccountServlet extends HttpServlet {
                 setStatus(req, "active");
             } else if ("pair".equals(action)) {
                 pair(req);
+            } else if ("delete".equals(action)) {
+                delete(req);
             }
         } catch (SQLException e) {
             SentryReporter.captureException(e);
@@ -93,6 +95,13 @@ public class DovecotAccountServlet extends HttpServlet {
         dovecotAccountDao.setStatus(id, status);
         auditService.record(req, "dovecot_account_" + ("disabled".equals(status) ? "disabled" : "enabled"),
                 "dovecot_account", id, null);
+    }
+
+    private void delete(HttpServletRequest req) throws SQLException {
+        long id = Long.parseLong(req.getParameter("id"));
+        String username = dovecotAccountDao.findById(id).map(DovecotAccount::getUsername).orElse("#" + id);
+        dovecotAccountDao.delete(id); // also drops any pairing row via ON DELETE CASCADE
+        auditService.record(req, "dovecot_account_deleted", "dovecot_account", id, "username=" + username);
     }
 
     private void pair(HttpServletRequest req) throws SQLException {

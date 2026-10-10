@@ -65,7 +65,7 @@
                             <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.enable") %></button>
                         <% } %>
                     </form>
-                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts" style="margin-top:.35rem;">
+                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
                         <input type="hidden" name="action" value="resetPassword">
                         <input type="hidden" name="id" value="<%= a.getId() %>">
                         <input type="password" name="newPassword" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8">

@@ -62,6 +62,12 @@
                             <button type="submit" class="btn-sm"><%= msgs.get("mailAccounts.action.enable") %></button>
                         <% } %>
                     </form>
+                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts"
+                          onsubmit="return confirm('<%= msgs.get("mailAccounts.confirm.delete") %>')">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="<%= a.getId() %>">
+                        <button type="submit" class="btn-sm btn-danger"><%= msgs.get("mailAccounts.action.delete") %></button>
+                    </form>
                 </td>
             </tr>
             <% } %>

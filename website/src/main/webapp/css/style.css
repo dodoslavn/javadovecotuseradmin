@@ -171,12 +171,6 @@ textarea {
     outline: none;
 }
 input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; }
-/* Inline per-row inputs (rename, reset password) stay compact in a table cell on desktop,
-   but should fill the full card width once the mobile card layout above kicks in. */
-.table-wrap input[type=text], .table-wrap input[type=password] { width: auto; max-width: 11em; }
-@media (max-width: 640px) {
-    .table-wrap input[type=text], .table-wrap input[type=password] { max-width: none; width: 100%; }
-}
 textarea { font-family: monospace; font-size: 12px; resize: vertical; }
 fieldset { border: 1px solid var(--border); border-radius: var(--radius); padding: .75rem 1rem; margin-bottom: .5rem; }
 legend { font-weight: 600; padding: 0 .4rem; }
@@ -199,7 +193,18 @@ button:hover, .btn:hover { background: var(--primary-hover); }
 .btn-danger, button.btn-danger  { background: var(--danger); }
 .btn-warning, button.btn-warning { background: var(--warning); }
 .btn-sm { padding: .3rem .7rem; font-size: 12px; }
-.inline-form { display: inline; }
+/* Used for per-row forms in table cells (rename, reset password, pairing, enable/disable).
+   Always a flex row so an input/select and its button stay side by side — never the
+   input stacking full-width above its own button — on desktop and on the mobile card
+   layout alike. Multiple stacked inline-forms in the same cell get spaced via the sibling rule. */
+.inline-form { display: flex; align-items: center; gap: .4rem; }
+.inline-form + .inline-form { margin-top: .4rem; }
+.inline-form input[type=text], .inline-form input[type=password], .inline-form select {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+}
+.inline-form button { flex: 0 0 auto; white-space: nowrap; }
 
 /* ── Flash messages ──────────────────────────────── */
 .flash { padding: .7rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; font-weight: 500; }
@@ -291,14 +296,18 @@ p { margin-bottom: .75rem; }
     .stat-row { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
     .login-box, .wizard-box { padding: 1.5rem 1rem; margin: .75rem; max-width: 100%; }
     .form-grid { max-width: 100%; }
-    .inline-form { display: block; margin-top: .35rem; }
     td, th { padding: .5rem; font-size: 13px; }
 
     /* Tables with per-row forms (buttons, dropdowns, text inputs) don't work as
        horizontally-scrolling tables on a phone — the columns holding those controls just
        get cut off with no visible way to reach them. Below this breakpoint, turn each row
        into its own card instead, with each cell's column header shown as a small label. */
-    .table-wrap table, .table-wrap tbody, .table-wrap tr, .table-wrap td { display: block; width: 100%; }
+    .table-wrap { overflow-x: visible; }
+    /* min-width: 0 matters here — a <table> keeps an intrinsic minimum width based on its
+       widest row's content (e.g. a non-wrapping button) even after display:block, so
+       width:100% alone doesn't let it shrink below that and it silently overflows its
+       parent instead. */
+    .table-wrap table, .table-wrap tbody, .table-wrap tr, .table-wrap td { display: block; width: 100%; min-width: 0; }
     .table-wrap thead { display: none; }
     .table-wrap tr { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: .75rem; padding: .25rem .75rem; }
     .table-wrap tr:last-child { margin-bottom: 0; }

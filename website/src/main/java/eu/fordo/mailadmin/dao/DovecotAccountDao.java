@@ -113,6 +113,16 @@ public class DovecotAccountDao {
         }
     }
 
+    /** Also removes any pairing row via ON DELETE CASCADE on web_account_dovecot_account. */
+    public void delete(long id) throws SQLException {
+        String sql = "DELETE FROM dovecot_accounts WHERE id = ?";
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            ps.executeUpdate();
+        }
+    }
+
     private DovecotAccount map(ResultSet rs) throws SQLException {
         DovecotAccount a = new DovecotAccount();
         a.setId(rs.getLong("id"));
