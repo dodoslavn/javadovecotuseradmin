@@ -39,6 +39,7 @@
     <div class="section">
         <h3><%= msgs.get("serverConfig.rabbitmq") %></h3>
         <form method="post" action="${pageContext.request.contextPath}/admin/server-config" class="form-grid">
+            <input type="hidden" name="action" value="rabbitmq">
             <label><%= msgs.get("rabbitmq.host") %>
                 <input type="text" name="host" value="<%= request.getAttribute("rmqHost") %>"></label>
             <label><%= msgs.get("rabbitmq.port") %>
@@ -54,6 +55,17 @@
                 <input type="text" name="exchange" value="<%= request.getAttribute("rmqExchange") %>"></label>
             <button type="submit"><%= msgs.get("serverConfig.save") %></button>
         </form>
+    </div>
+
+    <div class="section">
+        <h3><%= msgs.get("serverConfig.sentry") %></h3>
+        <form method="post" action="${pageContext.request.contextPath}/admin/server-config" class="form-grid">
+            <input type="hidden" name="action" value="sentry">
+            <label><%= msgs.get("serverConfig.sentry.dsn") %>
+                <input type="text" name="dsn" value="<%= request.getAttribute("sentryDsn") %>" placeholder="https://...@...ingest.sentry.io/..."></label>
+            <button type="submit"><%= msgs.get("serverConfig.save") %></button>
+        </form>
+        <p class="muted"><%= msgs.get("serverConfig.sentry.hint") %></p>
     </div>
 
     <div class="section">

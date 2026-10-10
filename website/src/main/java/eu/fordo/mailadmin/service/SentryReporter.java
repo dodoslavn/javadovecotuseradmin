@@ -29,6 +29,12 @@ public final class SentryReporter {
         initialized = true;
     }
 
+    /** Called after the DSN is changed via the admin UI, so it takes effect without a restart. */
+    public static synchronized void reinit() {
+        initialized = false;
+        init();
+    }
+
     public static void captureException(Throwable t) {
         init();
         Sentry.captureException(t);

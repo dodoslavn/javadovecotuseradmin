@@ -49,6 +49,8 @@ public class ServerConfigServlet extends HttpServlet {
         req.setAttribute("rmqPasswordSet", !AppConfig.get("rabbitmq.password", "").isBlank());
         req.setAttribute("rmqExchange", AppConfig.get("rabbitmq.exchange", ""));
 
+        req.setAttribute("sentryDsn", AppConfig.get("sentry.dsn", ""));
+
         req.setAttribute("syncTokenSet", !AppConfig.get("sync.token", "").isBlank());
         // "newSyncToken" is left untouched here — it's only ever present on the request when
         // doGet() is called from regenerateSyncToken() right after creating one, so the JSP
@@ -69,6 +71,10 @@ public class ServerConfigServlet extends HttpServlet {
         String action = req.getParameter("action");
         if ("regenerateSyncToken".equals(action)) {
             regenerateSyncToken(req, resp);
+            return;
+        }
+        if ("sentry".equals(action)) {
+            updateSentry(req, resp);
             return;
         }
         updateRabbitMq(req, resp);
@@ -97,6 +103,20 @@ public class ServerConfigServlet extends HttpServlet {
             auditService.record(req, "rabbitmq_config_updated", "server_config", null,
                     "host=" + host + " port=" + port + " vhost=" + vhost + " exchange=" + exchange
                             + (password != null && !password.isBlank() ? " (password rotated)" : ""));
+        } catch (Exception e) {
+            SentryReporter.captureException(e);
+            throw new ServletException(e);
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin/server-config");
+    }
+
+    private void updateSentry(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String dsn = req.getParameter("dsn");
+
+        try {
+            AppConfig.update(Map.of("sentry.dsn", dsn == null ? "" : dsn));
+            SentryReporter.reinit(); // picks up the new DSN (or turns reporting off) without a restart
+            auditService.record(req, "sentry_dsn_updated", "server_config", null, dsn == null || dsn.isBlank() ? "cleared" : "set");
         } catch (Exception e) {
             SentryReporter.captureException(e);
             throw new ServletException(e);
