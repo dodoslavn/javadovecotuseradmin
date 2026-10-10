@@ -58,4 +58,16 @@ CREATE TABLE schema_version (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT single_row CHECK (id = 1)
 ) ENGINE=InnoDB;
-INSERT INTO schema_version (id, version) VALUES (1, 1);
+INSERT INTO schema_version (id, version) VALUES (1, 2);
+
+-- Reported by the sync agent on the mail server (POST /api/sync-status, bearer-token
+-- authenticated — see SyncStatusApiServlet) after each run. Shown on the "Server
+-- configuration" admin page as "last sync". The agent itself is not built yet.
+CREATE TABLE sync_status (
+    id           TINYINT PRIMARY KEY DEFAULT 1,
+    last_sync_at TIMESTAMP NULL,
+    status       VARCHAR(16) NULL,
+    detail       VARCHAR(500) NULL,
+    updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT single_row CHECK (id = 1)
+) ENGINE=InnoDB;

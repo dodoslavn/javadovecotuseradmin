@@ -19,7 +19,7 @@ import java.sql.Statement;
 public final class SchemaInstaller {
 
     /** Bump this and add a case in runMigration() whenever the schema changes. */
-    public static final int CURRENT_VERSION = 1;
+    public static final int CURRENT_VERSION = 2;
 
     private static final String[] BASE_TABLES = {
             """
@@ -71,6 +71,16 @@ public final class SchemaInstaller {
                 updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 CONSTRAINT single_row CHECK (id = 1)
             ) ENGINE=InnoDB
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS sync_status (
+                id           TINYINT PRIMARY KEY DEFAULT 1,
+                last_sync_at TIMESTAMP NULL,
+                status       VARCHAR(16) NULL,
+                detail       VARCHAR(500) NULL,
+                updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                CONSTRAINT single_row CHECK (id = 1)
+            ) ENGINE=InnoDB
             """
     };
 
@@ -101,7 +111,9 @@ public final class SchemaInstaller {
 
     private static void runMigration(Connection conn, int toVersion) throws SQLException {
         switch (toVersion) {
-            // case 2 -> { try (Statement st = conn.createStatement()) { st.execute("ALTER TABLE ..."); } }
+            // sync_status is a brand-new table, already created above by BASE_TABLES's own
+            // CREATE TABLE IF NOT EXISTS — nothing further needed for an existing install.
+            case 2 -> { }
             default -> throw new IllegalStateException("No migration defined for schema version " + toVersion);
         }
     }

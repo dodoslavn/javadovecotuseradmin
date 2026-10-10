@@ -25,7 +25,7 @@ public class AuthFilter extends HttpFilter {
             throws IOException, ServletException {
         String path = req.getServletPath();
 
-        if (path.equals(LOGIN_PATH) || path.equals(SETUP_PATH) || path.startsWith("/css/") || path.startsWith("/assets/")) {
+        if (path.equals(LOGIN_PATH) || path.equals(SETUP_PATH) || path.startsWith("/css/") || path.startsWith("/assets/") || path.startsWith("/api/")) {
             chain.doFilter(req, resp);
             return;
         }

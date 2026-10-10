@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="eu.fordo.mailadmin.service.Messages" %>
+<%@ page import="eu.fordo.mailadmin.service.Messages, eu.fordo.mailadmin.service.DateFormatter, eu.fordo.mailadmin.model.SyncStatus" %>
 <% Messages msgs = Messages.of(request); %>
 <!DOCTYPE html>
 <html lang="en">
@@ -53,6 +53,44 @@
             <label><%= msgs.get("rabbitmq.exchange") %>
                 <input type="text" name="exchange" value="<%= request.getAttribute("rmqExchange") %>"></label>
             <button type="submit"><%= msgs.get("serverConfig.save") %></button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h3><%= msgs.get("serverConfig.sync") %></h3>
+        <%
+            SyncStatus syncStatus = (SyncStatus) request.getAttribute("syncStatus");
+            String newSyncToken = (String) request.getAttribute("newSyncToken");
+        %>
+        <div class="table-wrap">
+        <table>
+            <tr><th><%= msgs.get("serverConfig.sync.lastSync") %></th><td>
+                <% if (syncStatus != null && syncStatus.getLastSyncAt() != null) { %>
+                    <%= DateFormatter.format(syncStatus.getLastSyncAt()) %>
+                    <span class="badge <%= "ok".equals(syncStatus.getStatus()) ? "badge-ok" : "badge-off" %>">
+                        <%= "ok".equals(syncStatus.getStatus()) ? msgs.get("serverConfig.sync.status.ok") : msgs.get("serverConfig.sync.status.error") %>
+                    </span>
+                <% } else { %>
+                    <span class="muted"><%= msgs.get("serverConfig.sync.never") %></span>
+                <% } %>
+            </td></tr>
+            <% if (syncStatus != null && syncStatus.getDetail() != null && !syncStatus.getDetail().isBlank()) { %>
+            <tr><th><%= msgs.get("serverConfig.sync.detail") %></th><td><%= syncStatus.getDetail() %></td></tr>
+            <% } %>
+            <tr><th><%= msgs.get("serverConfig.sync.token") %></th><td>
+                <span class="badge"><%= ((Boolean) request.getAttribute("syncTokenSet")) ? msgs.get("serverConfig.passwordSet") : msgs.get("serverConfig.passwordNotSet") %></span>
+            </td></tr>
+        </table>
+        </div>
+
+        <% if (newSyncToken != null) { %>
+            <div class="flash flash-success"><%= msgs.get("serverConfig.sync.newTokenShown") %><br><code><%= newSyncToken %></code></div>
+        <% } %>
+
+        <p class="muted"><%= msgs.get("serverConfig.sync.tokenHint") %></p>
+        <form method="post" action="${pageContext.request.contextPath}/admin/server-config">
+            <input type="hidden" name="action" value="regenerateSyncToken">
+            <button type="submit"><%= msgs.get("serverConfig.sync.regenerate") %></button>
         </form>
     </div>
 </main>

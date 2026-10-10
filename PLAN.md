@@ -26,6 +26,7 @@ separate agent later. This repo covers the website only; the sync agent is a def
 - **Schema versioning** — a single-row `schema_version` table tracks the installed schema version. `SchemaInstaller.ensureSchema()` runs on every app startup (`AppStartupListener`, once DB credentials exist) as well as during setup, and applies any pending migrations automatically. Upgrading to a new WAR version with schema changes is just: bump `SchemaInstaller.CURRENT_VERSION`, add a `case` to `runMigration()`, deploy, restart Tomcat — no manual `ALTER TABLE` needed on the live database
 - **Audit log** — every mutating action is recorded with actor/action/target, but never a password or hash value
 - **Mail-sync plan (deferred)** — RabbitMQ carries only a lightweight "something changed" signal (never account data), an agent on the mail server debounces it, pulls the current account list over an authenticated HTTPS API, and atomically regenerates `passdb` — see the architecture discussion for the full design; not implemented in this repo yet
+- **Reverse notification (built ahead of the agent itself)** — `POST /api/sync-status` lets the future agent report back after each run (`status=ok|error`, optional `detail`), authenticated with a bearer token generated from the admin UI (Server configuration → Sync status), not a session. Shown there as "last sync: time + status badge". The endpoint and UI exist now; nothing calls it yet since the agent itself isn't built
 
 ## Repository Structure
 ```

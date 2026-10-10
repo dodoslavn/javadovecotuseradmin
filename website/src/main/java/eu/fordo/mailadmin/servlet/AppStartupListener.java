@@ -10,9 +10,14 @@ import jakarta.servlet.annotation.WebListener;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebListener
 public class AppStartupListener implements ServletContextListener {
+
+    private static final Logger LOG = Logger.getLogger(AppStartupListener.class.getName());
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         SentryReporter.init();
@@ -24,7 +29,10 @@ public class AppStartupListener implements ServletContextListener {
         if (AppConfig.hasDbCredentials()) {
             try (Connection conn = Database.getConnection()) {
                 SchemaInstaller.ensureSchema(conn);
-            } catch (SQLException e) {
+            } catch (SQLException | RuntimeException e) {
+                // Logged here too, not just Sentry — Sentry is a no-op without a configured
+                // DSN, which would otherwise swallow this with zero visibility anywhere.
+                LOG.log(Level.SEVERE, "Schema migration failed on startup", e);
                 SentryReporter.captureException(e);
             }
         }
