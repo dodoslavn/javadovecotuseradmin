@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List, eu.fordo.mailadmin.model.DovecotAccount, eu.fordo.mailadmin.service.Messages" %>
+<%@ page import="java.util.List, java.util.Map, eu.fordo.mailadmin.model.DovecotAccount, eu.fordo.mailadmin.model.WebAccount, eu.fordo.mailadmin.service.Messages" %>
 <% Messages msgs = Messages.of(request); %>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,17 +23,33 @@
                 <th><%= msgs.get("mailAccounts.col.domain") %></th>
                 <th><%= msgs.get("mailAccounts.col.username") %></th>
                 <th><%= msgs.get("mailAccounts.col.status") %></th>
+                <th><%= msgs.get("mailAccounts.col.pairedWith") %></th>
                 <th><%= msgs.get("mailAccounts.col.actions") %></th>
             </tr>
             <%
                 List<DovecotAccount> accounts = (List<DovecotAccount>) request.getAttribute("accounts");
+                List<WebAccount> webAccounts = (List<WebAccount>) request.getAttribute("webAccounts");
+                Map<Long, Long> pairings = (Map<Long, Long>) request.getAttribute("pairings");
                 for (DovecotAccount a : accounts) {
                     boolean active = "active".equals(a.getStatus());
+                    Long pairedWebAccountId = pairings.get(a.getId());
             %>
             <tr<%= active ? "" : " class=\"row-disabled\"" %>>
                 <td><%= a.getDomain() %></td>
                 <td><%= a.getUsername() %></td>
                 <td><span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span></td>
+                <td>
+                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
+                        <input type="hidden" name="action" value="pair">
+                        <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">
+                        <select name="webAccountId" onchange="this.form.submit()">
+                            <option value=""><%= msgs.get("mailAccounts.pairedWith.none") %></option>
+                            <% for (WebAccount w : webAccounts) { %>
+                                <option value="<%= w.getId() %>" <%= w.getId() == (pairedWebAccountId == null ? -1 : pairedWebAccountId) ? "selected" : "" %>><%= w.getUsername() %></option>
+                            <% } %>
+                        </select>
+                    </form>
+                </td>
                 <td>
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
                         <input type="hidden" name="id" value="<%= a.getId() %>">

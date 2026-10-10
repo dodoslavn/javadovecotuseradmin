@@ -1,7 +1,10 @@
 package eu.fordo.mailadmin.servlet;
 
 import eu.fordo.mailadmin.dao.DovecotAccountDao;
+import eu.fordo.mailadmin.dao.LinkDao;
+import eu.fordo.mailadmin.dao.WebAccountDao;
 import eu.fordo.mailadmin.model.DovecotAccount;
+import eu.fordo.mailadmin.model.WebAccount;
 import eu.fordo.mailadmin.service.AuditService;
 import eu.fordo.mailadmin.service.PasswordService;
 import eu.fordo.mailadmin.service.SentryReporter;
@@ -14,13 +17,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-/** Admin-only: list/create/disable Dovecot mail accounts. */
+/** Admin-only: list/create/disable Dovecot mail accounts, and pair each one to a web account. */
 @WebServlet("/admin/dovecot-accounts")
 public class DovecotAccountServlet extends HttpServlet {
 
     private final DovecotAccountDao dovecotAccountDao = new DovecotAccountDao();
+    private final WebAccountDao webAccountDao = new WebAccountDao();
+    private final LinkDao linkDao = new LinkDao();
     private final PasswordService passwordService = new PasswordService();
     private final AuditService auditService = new AuditService();
 
@@ -28,7 +34,11 @@ public class DovecotAccountServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             List<DovecotAccount> accounts = dovecotAccountDao.findAll();
+            List<WebAccount> webAccounts = webAccountDao.findAll();
+            Map<Long, Long> pairings = linkDao.findPairings();
             req.setAttribute("accounts", accounts);
+            req.setAttribute("webAccounts", webAccounts);
+            req.setAttribute("pairings", pairings);
             req.getRequestDispatcher("/WEB-INF/jsp/dovecot_accounts.jsp").forward(req, resp);
         } catch (SQLException e) {
             SentryReporter.captureException(e);
@@ -50,6 +60,8 @@ public class DovecotAccountServlet extends HttpServlet {
                 setStatus(req, "disabled");
             } else if ("enable".equals(action)) {
                 setStatus(req, "active");
+            } else if ("pair".equals(action)) {
+                pair(req);
             }
         } catch (SQLException e) {
             SentryReporter.captureException(e);
@@ -86,5 +98,15 @@ public class DovecotAccountServlet extends HttpServlet {
         dovecotAccountDao.setStatus(id, status);
         auditService.record(req, "dovecot_account_" + ("disabled".equals(status) ? "disabled" : "enabled"),
                 "dovecot_account", id, null);
+    }
+
+    private void pair(HttpServletRequest req) throws SQLException {
+        long dovecotAccountId = Long.parseLong(req.getParameter("dovecotAccountId"));
+        String webAccountIdParam = req.getParameter("webAccountId");
+        Long webAccountId = (webAccountIdParam == null || webAccountIdParam.isBlank()) ? null : Long.parseLong(webAccountIdParam);
+
+        linkDao.setPairing(dovecotAccountId, webAccountId);
+        auditService.record(req, webAccountId == null ? "link_removed" : "link_created", "dovecot_account", dovecotAccountId,
+                "webAccountId=" + webAccountId);
     }
 }

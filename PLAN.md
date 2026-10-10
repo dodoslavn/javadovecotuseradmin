@@ -20,8 +20,8 @@ website only; the sync agent is a deferred phase (see below).
 | Dependency policy | apt packages only, build with `javac`/`jar` directly | No Maven/Gradle at build or run time |
 
 ## Key Decisions
-- **Roles** — `ADMIN` (manage web accounts, mail accounts, links, server config) + `USER` (self-service: view/rotate password/enable/disable only their own linked mail account(s))
-- **Relation table** — a web account and a Dovecot mail account are linked many-to-many via `web_account_dovecot_account`, not a direct foreign key
+- **Roles** — `ADMIN` (manage web accounts, mail accounts, pairings, server config) + `USER` (self-service: view/rotate password/enable/disable only their own linked mail account(s))
+- **Pairing** — the underlying table (`web_account_dovecot_account`) is many-to-many, but there's no dedicated "links" page — each mail account on the Emails page has a single dropdown picking the one web account it's paired with (`LinkDao.setPairing()` clears any prior pairing for that mail account before setting the new one, so the UI's "one at a time" model holds even though the schema itself doesn't enforce it)
 - **Server config lives in a file, not the database** — `/etc/mailadmin/config.properties` holds DB, RabbitMQ, and Sentry settings. DB settings are host-file-only (the app can't safely rewrite its own DB credentials before it can connect); RabbitMQ settings are additionally editable from the admin UI, writing back to that same file via an in-place line rewrite (comments and other keys preserved)
 - **First-run setup wizard** — if DB credentials aren't in the config file, every request redirects to `/setup`: choose a DB name, get shown the exact `mysql`/`mkdir` commands to run, confirm connection details, and either adopt an existing installation's data untouched or create the first admin account
 - **Audit log** — every mutating action is recorded with actor/action/target, but never a password or hash value
