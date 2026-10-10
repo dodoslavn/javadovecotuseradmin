@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= msgs.get("serverConfig.heading") %> — <%= msgs.get("app.title") %></title>
     <link rel="icon" href="${pageContext.request.contextPath}/assets/logo.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=<%= eu.fordo.mailadmin.service.AssetVersion.VALUE %>">
 </head>
 <body>
 <%@ include file="nav.jspf" %>
