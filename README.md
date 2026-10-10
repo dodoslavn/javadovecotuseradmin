@@ -1,8 +1,8 @@
 # javaDovecotAdmin
 A web interface written in plain Java (Servlets + JSP, no framework) for managing Dovecot
-mail accounts across one or more mail servers, without those mail servers depending on a
-database — they keep reading local flat files. The admin website has its own MariaDB
-database; that's unrelated to how Dovecot itself authenticates.
+mail accounts for one mail server, without that mail server depending on a database — it
+keeps reading local flat files. The admin website has its own MariaDB database; that's
+unrelated to how Dovecot itself authenticates.
 
 > **This project is completely vibe-coded** — written by an AI coding agent
 > from natural-language instructions, with human review and testing but no
@@ -16,7 +16,7 @@ This repository contains:
 ## Requirements
 - Debian 13 (Trixie), may also work on Ubuntu
 - root access
-- a mail server reachable separately — this app manages account *records*; syncing them down to an actual running Dovecot instance is a deferred phase (see PLAN.md)
+- the one mail server this app manages, reachable separately — this app manages account *records*; syncing them down to an actual running Dovecot instance is a deferred phase (see PLAN.md)
 
 ## What it uses
 - Tomcat 10 — Servlet/JSP container

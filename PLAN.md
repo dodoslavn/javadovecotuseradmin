@@ -1,10 +1,10 @@
 # javaDovecotAdmin — Project Plan
 
 ## Goal
-A web UI to manage Dovecot mail accounts across one or more independent mail servers, without
-the mail servers themselves depending on a database — they keep reading local flat
-files (`/etc/dovecot/passdb`), synced down by a separate agent later. This repo covers the
-website only; the sync agent is a deferred phase (see below).
+A web UI to manage Dovecot mail accounts for one mail server, without that server depending
+on a database — it keeps reading a local flat file (`/etc/dovecot/passdb`), synced down by a
+separate agent later. This repo covers the website only; the sync agent is a deferred phase
+(see below).
 
 ## Stack
 | Component | Choice | Reason |
@@ -24,7 +24,7 @@ website only; the sync agent is a deferred phase (see below).
 - **Server config lives in a file, not the database** — `/etc/mailadmin/config.properties` holds DB, RabbitMQ, and Sentry settings. DB settings are host-file-only (the app can't safely rewrite its own DB credentials before it can connect); RabbitMQ settings are additionally editable from the admin UI, writing back to that same file via an in-place line rewrite (comments and other keys preserved)
 - **First-run setup wizard** — if DB credentials aren't in the config file, every request redirects to `/setup`: choose a DB name, get shown the exact `mysql`/`mkdir` commands to run, confirm connection details, and either adopt an existing installation's data untouched or create the first admin account
 - **Audit log** — every mutating action is recorded with actor/action/target, but never a password or hash value
-- **Mail-sync plan (deferred)** — RabbitMQ carries only a lightweight "something changed" signal (never account data), each mail host's agent debounces it, pulls the current account list over an authenticated HTTPS API, and atomically regenerates `passdb` — see the architecture discussion for the full design; not implemented in this repo yet
+- **Mail-sync plan (deferred)** — RabbitMQ carries only a lightweight "something changed" signal (never account data), an agent on the mail server debounces it, pulls the current account list over an authenticated HTTPS API, and atomically regenerates `passdb` — see the architecture discussion for the full design; not implemented in this repo yet
 
 ## Repository Structure
 ```
@@ -94,4 +94,4 @@ RabbitMQ and DB connection settings are **not** stored in the database — see `
 - Tomcat's systemd unit keeps `ProtectSystem=strict`; only `/etc/mailadmin` is carved out via `ReadWritePaths`
 
 ## Deferred
-RabbitMQ change-signal publishing, the per-mail-host Python sync agent, atomic `passdb` file regeneration, Dovecot reload. Config storage for RabbitMQ is already in place; the agent and publisher are not built yet. Note: `dovecot_accounts` no longer has a host/domain field (removed — it looked redundant with `username` already being a full address, and in practice always matched it 1:1). If a second real mail server is ever added, that sync phase will need *some* way to know which host each account's passdb line belongs to — revisit then, e.g. a host field reintroduced at that point, or one DB per host.
+RabbitMQ change-signal publishing, the sync agent on the mail server, atomic `passdb` file regeneration, Dovecot reload. Config storage for RabbitMQ is already in place; the agent and publisher are not built yet. Scope is one website managing one mail server — no host/domain field needed on accounts, and no multi-host routing concern for the sync phase.
