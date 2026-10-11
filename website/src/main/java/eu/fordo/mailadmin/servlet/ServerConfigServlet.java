@@ -5,6 +5,7 @@ import eu.fordo.mailadmin.model.SyncStatus;
 import eu.fordo.mailadmin.service.AppConfig;
 import eu.fordo.mailadmin.service.AuditService;
 import eu.fordo.mailadmin.service.SentryReporter;
+import eu.fordo.mailadmin.service.SyncStatusRabbitMqConsumer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -20,12 +20,13 @@ import java.util.Map;
 /**
  * Admin-only. MySQL/MariaDB settings are shown read-only — the app can't safely rewrite its
  * own DB credentials before it can even connect, so those stay host-edited-file-only.
- * RabbitMQ settings ARE editable here and get written back to
+ * RabbitMQ and Sentry settings ARE editable here and get written back to
  * /etc/mailadmin/config.properties (not a DB table — see AppConfig) via AppConfig.update(),
  * which rewrites only the matching lines and leaves everything else in the file untouched.
  *
- * Also shows the last report from the (deferred, not-yet-built) sync agent — see
- * SyncStatusApiServlet — and lets the admin generate the bearer token that agent will need.
+ * Also shows the last report from the (deferred, not-yet-built) sync agent, delivered via
+ * RabbitMQ — see SyncStatusRabbitMqConsumer — reusing these same rabbitmq.* credentials
+ * rather than a separate auth mechanism.
  */
 @WebServlet("/admin/server-config")
 public class ServerConfigServlet extends HttpServlet {
@@ -51,11 +52,6 @@ public class ServerConfigServlet extends HttpServlet {
 
         req.setAttribute("sentryDsn", AppConfig.get("sentry.dsn", ""));
 
-        req.setAttribute("syncTokenSet", !AppConfig.get("sync.token", "").isBlank());
-        // "newSyncToken" is left untouched here — it's only ever present on the request when
-        // doGet() is called from regenerateSyncToken() right after creating one, so the JSP
-        // can show it exactly once.
-
         try {
             req.setAttribute("syncStatus", syncStatusDao.get());
         } catch (SQLException e) {
@@ -69,10 +65,6 @@ public class ServerConfigServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("action");
-        if ("regenerateSyncToken".equals(action)) {
-            regenerateSyncToken(req, resp);
-            return;
-        }
         if ("sentry".equals(action)) {
             updateSentry(req, resp);
             return;
@@ -100,6 +92,7 @@ public class ServerConfigServlet extends HttpServlet {
 
         try {
             AppConfig.update(updates);
+            SyncStatusRabbitMqConsumer.restart(); // picks up new host/credentials/exchange immediately
             auditService.record(req, "rabbitmq_config_updated", "server_config", null,
                     "host=" + host + " port=" + port + " vhost=" + vhost + " exchange=" + exchange
                             + (password != null && !password.isBlank() ? " (password rotated)" : ""));
@@ -122,28 +115,5 @@ public class ServerConfigServlet extends HttpServlet {
             throw new ServletException(e);
         }
         resp.sendRedirect(req.getContextPath() + "/admin/server-config");
-    }
-
-    private void regenerateSyncToken(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 32; i++) {
-            sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
-        }
-        String newToken = sb.toString();
-
-        try {
-            AppConfig.update(Map.of("sync.token", newToken));
-            auditService.record(req, "sync_token_regenerated", "server_config", null, null);
-        } catch (Exception e) {
-            SentryReporter.captureException(e);
-            throw new ServletException(e);
-        }
-
-        // Shown once, directly after regeneration, since there's no other way to retrieve it
-        // later — the admin needs to copy this into the sync agent's own config.
-        req.setAttribute("newSyncToken", newToken);
-        doGet(req, resp);
     }
 }

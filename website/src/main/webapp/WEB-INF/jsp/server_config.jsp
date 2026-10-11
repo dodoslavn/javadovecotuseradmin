@@ -70,9 +70,9 @@
 
     <div class="section">
         <h3><%= msgs.get("serverConfig.sync") %></h3>
+        <p class="muted"><%= msgs.get("serverConfig.sync.hint") %></p>
         <%
             SyncStatus syncStatus = (SyncStatus) request.getAttribute("syncStatus");
-            String newSyncToken = (String) request.getAttribute("newSyncToken");
         %>
         <div class="table-wrap">
         <table>
@@ -89,21 +89,8 @@
             <% if (syncStatus != null && syncStatus.getDetail() != null && !syncStatus.getDetail().isBlank()) { %>
             <tr><th><%= msgs.get("serverConfig.sync.detail") %></th><td><%= syncStatus.getDetail() %></td></tr>
             <% } %>
-            <tr><th><%= msgs.get("serverConfig.sync.token") %></th><td>
-                <span class="badge"><%= ((Boolean) request.getAttribute("syncTokenSet")) ? msgs.get("serverConfig.passwordSet") : msgs.get("serverConfig.passwordNotSet") %></span>
-            </td></tr>
         </table>
         </div>
-
-        <% if (newSyncToken != null) { %>
-            <div class="flash flash-success"><%= msgs.get("serverConfig.sync.newTokenShown") %><br><code><%= newSyncToken %></code></div>
-        <% } %>
-
-        <p class="muted"><%= msgs.get("serverConfig.sync.tokenHint") %></p>
-        <form method="post" action="${pageContext.request.contextPath}/admin/server-config">
-            <input type="hidden" name="action" value="regenerateSyncToken">
-            <button type="submit"><%= msgs.get("serverConfig.sync.regenerate") %></button>
-        </form>
     </div>
 </main>
 <%@ include file="footer.jspf" %>

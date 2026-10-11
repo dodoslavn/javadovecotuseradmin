@@ -4,6 +4,7 @@ import eu.fordo.mailadmin.dao.Database;
 import eu.fordo.mailadmin.service.AppConfig;
 import eu.fordo.mailadmin.service.SchemaInstaller;
 import eu.fordo.mailadmin.service.SentryReporter;
+import eu.fordo.mailadmin.service.SyncStatusRabbitMqConsumer;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
@@ -35,6 +36,12 @@ public class AppStartupListener implements ServletContextListener {
                 LOG.log(Level.SEVERE, "Schema migration failed on startup", e);
                 SentryReporter.captureException(e);
             }
+            SyncStatusRabbitMqConsumer.start();
         }
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        SyncStatusRabbitMqConsumer.stop();
     }
 }
