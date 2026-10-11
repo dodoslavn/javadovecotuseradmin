@@ -131,6 +131,13 @@ main {
 main h2 { font-size: 20px; margin-bottom: 1.5rem; }
 h3 { font-size: 15px; margin-bottom: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+/* A section whose only real content is a narrow settings/create form (max-width 420px)
+   otherwise stretches edge-to-edge with main's 960px width, leaving a large dead strip of
+   empty space beside the form — reads as unfinished rather than a deliberate layout.
+   Shrink-wrap those cards to the form instead; sections that also hold a full-width table
+   (e.g. the sync status card, which has its own form just for the "Force sync" button)
+   are excluded so the table isn't squeezed down to the form's width too. */
+.section:has(> form.form-grid):not(:has(.table-wrap)) { max-width: 480px; }
 
 /* ── Stats ───────────────────────────────────────── */
 .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
