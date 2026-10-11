@@ -38,6 +38,14 @@
 
     <div class="section">
         <h3><%= msgs.get("serverConfig.rabbitmq") %></h3>
+        <p>
+            <%= msgs.get("serverConfig.rabbitmq.connection") %>:
+            <% if ((Boolean) request.getAttribute("rmqConnected")) { %>
+                <span class="badge badge-ok"><%= msgs.get("serverConfig.rabbitmq.connected") %></span>
+            <% } else { %>
+                <span class="badge badge-off"><%= msgs.get("serverConfig.rabbitmq.disconnected") %></span>
+            <% } %>
+        </p>
         <form method="post" action="${pageContext.request.contextPath}/admin/server-config" class="form-grid">
             <input type="hidden" name="action" value="rabbitmq">
             <label><%= msgs.get("rabbitmq.host") %>
@@ -73,7 +81,13 @@
         <p class="muted"><%= msgs.get("serverConfig.sync.hint") %></p>
         <%
             SyncStatus syncStatus = (SyncStatus) request.getAttribute("syncStatus");
+            String forceSyncResult = (String) request.getAttribute("forceSyncResult");
         %>
+        <% if ("success".equals(forceSyncResult)) { %>
+            <div class="flash flash-success"><%= msgs.get("serverConfig.sync.forceSyncSuccess") %></div>
+        <% } else if ("error".equals(forceSyncResult)) { %>
+            <div class="flash flash-error"><%= msgs.get("serverConfig.sync.forceSyncError") %></div>
+        <% } %>
         <div class="table-wrap">
         <table>
             <tr><th><%= msgs.get("serverConfig.sync.lastSync") %></th><td>
@@ -91,6 +105,11 @@
             <% } %>
         </table>
         </div>
+
+        <form method="post" action="${pageContext.request.contextPath}/admin/server-config">
+            <input type="hidden" name="action" value="forceSync">
+            <button type="submit"><%= msgs.get("serverConfig.sync.forceSync") %></button>
+        </form>
     </div>
 </main>
 <%@ include file="footer.jspf" %>

@@ -4,7 +4,9 @@ import eu.fordo.mailadmin.dao.SyncStatusDao;
 import eu.fordo.mailadmin.model.SyncStatus;
 import eu.fordo.mailadmin.service.AppConfig;
 import eu.fordo.mailadmin.service.AuditService;
+import eu.fordo.mailadmin.service.RabbitMqPublisher;
 import eu.fordo.mailadmin.service.SentryReporter;
+import eu.fordo.mailadmin.service.SessionUtil;
 import eu.fordo.mailadmin.service.SyncStatusRabbitMqConsumer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -51,6 +53,7 @@ public class ServerConfigServlet extends HttpServlet {
         req.setAttribute("rmqExchange", AppConfig.get("rabbitmq.exchange", ""));
 
         req.setAttribute("sentryDsn", AppConfig.get("sentry.dsn", ""));
+        req.setAttribute("rmqConnected", SyncStatusRabbitMqConsumer.isConnected());
 
         try {
             req.setAttribute("syncStatus", syncStatusDao.get());
@@ -69,7 +72,24 @@ public class ServerConfigServlet extends HttpServlet {
             updateSentry(req, resp);
             return;
         }
+        if ("forceSync".equals(action)) {
+            forceSync(req, resp);
+            return;
+        }
         updateRabbitMq(req, resp);
+    }
+
+    private void forceSync(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String actor = SessionUtil.currentUsername(req);
+        try {
+            RabbitMqPublisher.publishSyncRequest("manual trigger by " + actor);
+            auditService.record(req, "sync_requested", "server_config", null, "manual trigger");
+            req.setAttribute("forceSyncResult", "success");
+        } catch (Exception e) {
+            SentryReporter.captureException(e);
+            req.setAttribute("forceSyncResult", "error");
+        }
+        doGet(req, resp); // forward, not redirect, so the one-time result message survives
     }
 
     private void updateRabbitMq(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

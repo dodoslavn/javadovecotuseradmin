@@ -35,10 +35,16 @@ public final class SyncStatusRabbitMqConsumer {
     private static final long RETRY_DELAY_MS = 10_000;
 
     private static volatile boolean running = false;
+    private static volatile boolean connected = false;
     private static Thread thread;
     private static volatile Connection connection;
 
     private SyncStatusRabbitMqConsumer() {}
+
+    /** For the "RabbitMQ connection" status shown on Server configuration. */
+    public static boolean isConnected() {
+        return connected;
+    }
 
     public static synchronized void start() {
         if (running) {
@@ -107,6 +113,7 @@ public final class SyncStatusRabbitMqConsumer {
         channel.queueDeclare(QUEUE, true, false, false, null);
         channel.queueBind(QUEUE, exchange, ROUTING_KEY);
 
+        connected = true;
         LOG.info("RabbitMQ sync-status consumer connected (" + factory.getHost() + "), listening on " + QUEUE);
 
         SyncStatusDao syncStatusDao = new SyncStatusDao();
@@ -141,6 +148,7 @@ public final class SyncStatusRabbitMqConsumer {
     }
 
     private static void closeConnectionQuietly() {
+        connected = false;
         Connection c = connection;
         connection = null;
         if (c != null) {
