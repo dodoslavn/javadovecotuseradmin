@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Admin-only: list/create/disable Dovecot mail accounts, and pair each one to a web account. */
-@WebServlet("/admin/dovecot-accounts")
+@WebServlet({"/admin/dovecot-accounts", "/admin/dovecot-accounts/new"})
 public class DovecotAccountServlet extends HttpServlet {
 
     private final DovecotAccountDao dovecotAccountDao = new DovecotAccountDao();
@@ -31,6 +31,10 @@ public class DovecotAccountServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (req.getServletPath().endsWith("/new")) {
+            req.getRequestDispatcher("/WEB-INF/jsp/dovecot_account_new.jsp").forward(req, resp);
+            return;
+        }
         try {
             List<DovecotAccount> accounts = dovecotAccountDao.findAll();
             List<WebAccount> webAccounts = webAccountDao.findAll();
@@ -52,7 +56,7 @@ public class DovecotAccountServlet extends HttpServlet {
             if ("create".equals(action)) {
                 create(req);
                 if (req.getAttribute("errorKey") != null) {
-                    doGet(req, resp); // re-render the list with the error instead of losing it on redirect
+                    req.getRequestDispatcher("/WEB-INF/jsp/dovecot_account_new.jsp").forward(req, resp);
                     return;
                 }
             } else if ("disable".equals(action)) {
@@ -70,7 +74,11 @@ public class DovecotAccountServlet extends HttpServlet {
         } catch (IOException | InterruptedException e) {
             SentryReporter.captureException(e);
             req.setAttribute("errorKey", "mailAccounts.error.hashFailed");
-            doGet(req, resp);
+            if ("create".equals(action)) {
+                req.getRequestDispatcher("/WEB-INF/jsp/dovecot_account_new.jsp").forward(req, resp);
+            } else {
+                doGet(req, resp);
+            }
             return;
         }
         resp.sendRedirect(req.getContextPath() + "/admin/dovecot-accounts");
@@ -82,6 +90,7 @@ public class DovecotAccountServlet extends HttpServlet {
 
         if (dovecotAccountDao.findByUsername(username).isPresent()) {
             req.setAttribute("errorKey", "mailAccounts.error.duplicate");
+            req.setAttribute("submittedUsername", username);
             return;
         }
 

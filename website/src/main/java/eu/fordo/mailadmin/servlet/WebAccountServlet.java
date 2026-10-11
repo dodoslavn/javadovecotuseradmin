@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 /** Admin-only: list/create/enable/disable website login accounts, reset their password, change their role, or rename them. */
-@WebServlet("/admin/web-accounts")
+@WebServlet({"/admin/web-accounts", "/admin/web-accounts/new"})
 public class WebAccountServlet extends HttpServlet {
 
     private final WebAccountDao webAccountDao = new WebAccountDao();
@@ -28,6 +28,10 @@ public class WebAccountServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (req.getServletPath().endsWith("/new")) {
+            req.getRequestDispatcher("/WEB-INF/jsp/web_account_new.jsp").forward(req, resp);
+            return;
+        }
         try {
             List<WebAccount> accounts = webAccountDao.findAll();
             req.setAttribute("accounts", accounts);
@@ -44,6 +48,10 @@ public class WebAccountServlet extends HttpServlet {
         try {
             if ("create".equals(action)) {
                 create(req);
+                if (req.getAttribute("errorKey") != null) {
+                    req.getRequestDispatcher("/WEB-INF/jsp/web_account_new.jsp").forward(req, resp);
+                    return;
+                }
             } else if ("disable".equals(action)) {
                 long id = Long.parseLong(req.getParameter("id"));
                 if (id == SessionUtil.currentWebAccountId(req)) {
@@ -83,6 +91,7 @@ public class WebAccountServlet extends HttpServlet {
         Optional<WebAccount> existing = webAccountDao.findByUsername(username);
         if (existing.isPresent()) {
             req.setAttribute("errorKey", "webAccounts.error.duplicate");
+            req.setAttribute("submittedUsername", username);
             return;
         }
 

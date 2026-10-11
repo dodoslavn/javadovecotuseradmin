@@ -130,6 +130,12 @@ main {
 }
 main h2 { font-size: 20px; margin-bottom: 1.5rem; }
 h3 { font-size: 15px; margin-bottom: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+/* ── Page header (heading + a primary action, e.g. "+ Add account") ── */
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.page-header h2 { margin-bottom: 0; }
+.back-link { display: inline-block; margin-bottom: 1rem; color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; }
+.back-link:hover { color: var(--primary); }
 .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
 /* A section whose only real content is a narrow settings/create form (max-width 420px)
    otherwise stretches edge-to-edge with main's 960px width, leaving a large dead strip of
@@ -152,6 +158,32 @@ th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacin
 td { padding: .6rem .75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 .row-disabled td { color: var(--muted); }
+
+/* ── Account cards (one box per account, instead of a table row) ─── */
+.account-list { display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1.25rem; }
+.account-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: .75rem 1.1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem 1.25rem;
+}
+.account-card.row-disabled { background: var(--bg); }
+.account-card.row-disabled .account-card-meta { color: var(--muted); }
+.account-card-id { display: flex; align-items: center; gap: .6rem; flex: 1 1 220px; min-width: 0; }
+.account-card-meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.account-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-left: auto; }
+/* Same overflow problem a plain table had — an unconstrained input[type=text/password]
+   defaults to ~20ch wide, which looks bulky stacked inline with a select + badges + a
+   couple of buttons in one card row. */
+.account-card .inline-form input[type=text], .account-card .inline-form input[type=password] {
+    max-width: 150px;
+}
+.account-card select { padding: .4rem .6rem; font-size: 13px; }
 
 /* ── Badges ──────────────────────────────────────── */
 .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 9999px; background: var(--border); color: var(--muted); }
