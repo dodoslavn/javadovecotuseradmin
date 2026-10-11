@@ -205,6 +205,15 @@ button:hover, .btn:hover { background: var(--primary-hover); }
     width: auto;
 }
 .inline-form button { flex: 0 0 auto; white-space: nowrap; }
+/* Inside a table, an unconstrained input[type=text/password] defaults to ~20ch wide, which
+   is enough (across a username/rename field plus a disable+reset-password pair stacked in
+   the actions column) to push the table wider than main's 960px container on a normal
+   desktop screen — table-wrap's overflow-x:auto then hides the rest with no visible
+   scrollbar hint, so the Reset/Rename button just looks clipped off. Capping these inputs
+   keeps each row's forms within the column instead of ballooning the whole table. */
+.table-wrap .inline-form input[type=text], .table-wrap .inline-form input[type=password] {
+    max-width: 130px;
+}
 
 /* ── Flash messages ──────────────────────────────── */
 .flash { padding: .7rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; font-weight: 500; }
