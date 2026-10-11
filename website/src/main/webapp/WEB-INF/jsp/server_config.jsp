@@ -106,7 +106,7 @@
         </table>
         </div>
 
-        <form method="post" action="${pageContext.request.contextPath}/admin/server-config">
+        <form method="post" action="${pageContext.request.contextPath}/admin/server-config" class="form-grid" style="margin-top:1rem;">
             <input type="hidden" name="action" value="forceSync">
             <button type="submit"><%= msgs.get("serverConfig.sync.forceSync") %></button>
         </form>
