@@ -71,9 +71,20 @@ public final class AppConfig {
      * Writes to a temp file in the same directory and renames atomically.
      */
     public static synchronized void update(Map<String, String> updates) throws IOException {
-        List<String> existingLines = Files.isReadable(CONFIG_PATH)
-                ? Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8)
-                : new ArrayList<>();
+        List<String> existingLines;
+        if (Files.isReadable(CONFIG_PATH)) {
+            existingLines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
+        } else {
+            // The file vanished out from under a running app (e.g. deleted by mistake) — fall
+            // back to reconstructing from the in-memory cache (whatever was last successfully
+            // loaded) instead of treating it as empty. Otherwise the very first save after
+            // that would silently drop every other previously-known key (db.*, sentry.dsn,
+            // ...), not just overwrite the ones actually being updated.
+            existingLines = new ArrayList<>();
+            for (String key : props.stringPropertyNames()) {
+                existingLines.add(key + "=" + props.getProperty(key));
+            }
+        }
 
         Map<String, String> remaining = new LinkedHashMap<>(updates);
         List<String> newLines = new ArrayList<>();
