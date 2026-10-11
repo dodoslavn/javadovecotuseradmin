@@ -29,20 +29,22 @@
                 Long pairedWebAccountId = pairings.get(a.getId());
         %>
         <div class="account-card<%= active ? "" : " row-disabled" %>">
-            <div class="account-card-id">
-                <span><%= a.getUsername() %></span>
-                <span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span>
+            <div class="account-card-main">
+                <div class="account-card-id">
+                    <span><%= a.getUsername() %></span>
+                    <span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span>
+                </div>
+                <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
+                    <input type="hidden" name="action" value="pair">
+                    <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">
+                    <select name="webAccountId" onchange="this.form.submit()">
+                        <option value=""><%= msgs.get("mailAccounts.pairedWith.none") %></option>
+                        <% for (WebAccount w : webAccounts) { %>
+                            <option value="<%= w.getId() %>" <%= w.getId() == (pairedWebAccountId == null ? -1 : pairedWebAccountId) ? "selected" : "" %>><%= w.getUsername() %></option>
+                        <% } %>
+                    </select>
+                </form>
             </div>
-            <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
-                <input type="hidden" name="action" value="pair">
-                <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">
-                <select name="webAccountId" onchange="this.form.submit()">
-                    <option value=""><%= msgs.get("mailAccounts.pairedWith.none") %></option>
-                    <% for (WebAccount w : webAccounts) { %>
-                        <option value="<%= w.getId() %>" <%= w.getId() == (pairedWebAccountId == null ? -1 : pairedWebAccountId) ? "selected" : "" %>><%= w.getUsername() %></option>
-                    <% } %>
-                </select>
-            </form>
             <div class="account-card-actions">
                 <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
                     <input type="hidden" name="id" value="<%= a.getId() %>">

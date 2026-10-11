@@ -25,24 +25,26 @@
             for (WebAccount a : accounts) {
         %>
         <div class="account-card<%= a.isEnabled() ? "" : " row-disabled" %>">
-            <div class="account-card-id">
+            <div class="account-card-main">
+                <div class="account-card-id">
+                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
+                        <input type="hidden" name="action" value="rename">
+                        <input type="hidden" name="id" value="<%= a.getId() %>">
+                        <input type="text" name="newUsername" value="<%= a.getUsername() %>">
+                        <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.rename") %></button>
+                    </form>
+                </div>
                 <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
-                    <input type="hidden" name="action" value="rename">
+                    <input type="hidden" name="action" value="changeRole">
                     <input type="hidden" name="id" value="<%= a.getId() %>">
-                    <input type="text" name="newUsername" value="<%= a.getUsername() %>">
-                    <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.rename") %></button>
+                    <select name="role" onchange="this.form.submit()">
+                        <option value="USER" <%= a.getRole() == Role.USER ? "selected" : "" %>>USER</option>
+                        <option value="ADMIN" <%= a.getRole() == Role.ADMIN ? "selected" : "" %>>ADMIN</option>
+                    </select>
                 </form>
+                <span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span>
+                <span class="account-card-meta"><%= DateFormatter.format(a.getCreatedAt()) %></span>
             </div>
-            <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
-                <input type="hidden" name="action" value="changeRole">
-                <input type="hidden" name="id" value="<%= a.getId() %>">
-                <select name="role" onchange="this.form.submit()">
-                    <option value="USER" <%= a.getRole() == Role.USER ? "selected" : "" %>>USER</option>
-                    <option value="ADMIN" <%= a.getRole() == Role.ADMIN ? "selected" : "" %>>ADMIN</option>
-                </select>
-            </form>
-            <span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span>
-            <span class="account-card-meta"><%= DateFormatter.format(a.getCreatedAt()) %></span>
             <div class="account-card-actions">
                 <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
                     <input type="hidden" name="id" value="<%= a.getId() %>">
