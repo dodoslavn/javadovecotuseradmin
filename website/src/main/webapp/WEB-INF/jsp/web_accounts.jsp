@@ -36,11 +36,10 @@
                 <label><%= msgs.get("webAccounts.field.password") %>
                     <input type="password" name="newPassword" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8"></label>
 
-                <label><%= msgs.get("webAccounts.field.role") %>
-                    <select name="role">
-                        <option value="USER" <%= a.getRole() == Role.USER ? "selected" : "" %>>USER</option>
-                        <option value="ADMIN" <%= a.getRole() == Role.ADMIN ? "selected" : "" %>>ADMIN</option>
-                    </select></label>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="wa-admin-<%= a.getId() %>" name="role" value="ADMIN" <%= a.getRole() == Role.ADMIN ? "checked" : "" %>>
+                    <label for="wa-admin-<%= a.getId() %>"><%= msgs.get("webAccounts.field.role") %></label>
+                </div>
 
                 <div class="account-card-footer">
                     <div class="checkbox-row">

@@ -69,10 +69,19 @@ public class WebAccountServlet extends HttpServlet {
         resp.sendRedirect(req.getContextPath() + "/admin/web-accounts");
     }
 
+    /**
+     * Admin privileges are a single checkbox in the UI, not a role dropdown. An unchecked
+     * checkbox submits no "role" parameter at all (standard HTML form behaviour), so a plain
+     * Role.valueOf(null) would throw — absence means USER, a present "ADMIN" value means ADMIN.
+     */
+    private static Role roleFromRequest(HttpServletRequest req) {
+        return "ADMIN".equals(req.getParameter("role")) ? Role.ADMIN : Role.USER;
+    }
+
     private void create(HttpServletRequest req) throws SQLException {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
-        Role role = Role.valueOf(req.getParameter("role"));
+        Role role = roleFromRequest(req);
 
         Optional<WebAccount> existing = webAccountDao.findByUsername(username);
         if (existing.isPresent()) {
@@ -99,7 +108,7 @@ public class WebAccountServlet extends HttpServlet {
         long id = Long.parseLong(req.getParameter("id"));
         String newUsername = req.getParameter("newUsername");
         String newPassword = req.getParameter("newPassword");
-        Role role = Role.valueOf(req.getParameter("role"));
+        Role role = roleFromRequest(req);
         boolean enabled = "true".equals(req.getParameter("enabled"));
 
         if (newUsername == null || newUsername.isBlank()) {

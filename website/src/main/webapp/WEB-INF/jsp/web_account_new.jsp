@@ -25,12 +25,10 @@
                 <input type="text" name="username" value="<%= request.getAttribute("submittedUsername") != null ? request.getAttribute("submittedUsername") : "" %>" required autofocus></label>
             <label><%= msgs.get("webAccounts.create.password") %>
                 <input type="password" name="password" required></label>
-            <label><%= msgs.get("webAccounts.create.role") %>
-                <select name="role">
-                    <option value="USER">USER</option>
-                    <option value="ADMIN">ADMIN</option>
-                </select>
-            </label>
+            <div class="checkbox-row">
+                <input type="checkbox" id="new-admin" name="role" value="ADMIN">
+                <label for="new-admin"><%= msgs.get("webAccounts.create.role") %></label>
+            </div>
             <button type="submit"><%= msgs.get("webAccounts.create.submit") %></button>
         </form>
     </div>
