@@ -153,25 +153,17 @@ h2 + .page-intro, .page-header + .page-intro { margin-top: -1rem; }
 /* Server configuration is several cards of mixed content (read-only tables + editable
    forms). The shrink-wrap rule above is right for single-card pages (Create account, etc.)
    but here it would make the form cards ~480px while the table cards stay full width, which
-   reads as ragged on a wide screen. On this page keep every card the full content width so
-   their edges line up, and flow multi-field forms into responsive columns so they fill that
-   width instead of a tall narrow strip. Collapses to a single column on phones (≤640px),
-   where the stacked full-width layout already looked right. */
-/* Specific enough to beat the shrink-wrap rule above, whose :has()/:not() arguments give it
-   a high specificity — a plain ".config-page .section" would lose and the cards would stay
-   capped at 480px. */
+   reads as ragged on a wide screen. Keep every card the full content width so their edges
+   line up; the forms inside stay a tidy left-aligned single column (their own 420px
+   max-width), which is the standard, uncluttered settings-page look. (An earlier attempt
+   flowed the fields into multiple columns to "fill" the width, but a field like the RabbitMQ
+   password — whose "(set)" badge makes its label taller than its neighbours' — threw the
+   row alignment off and read as messy; a plain single column is cleaner.)
+   The max-width override is written specific enough to beat the shrink-wrap rule above, whose
+   :has()/:not() arguments give it a high specificity — a plain ".config-page .section" would
+   lose and the form cards would stay capped at 480px. */
 .config-page .section,
 .config-page .section:has(> form.form-grid):not(:has(.table-wrap)) { max-width: none; }
-@media (min-width: 641px) {
-    .config-page .form-grid {
-        max-width: none;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: .75rem 1.5rem;
-        align-items: end;
-    }
-    .config-page .form-grid > button[type=submit] { grid-column: 1 / -1; justify-self: start; }
-}
 
 /* ── Stats ───────────────────────────────────────── */
 .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
