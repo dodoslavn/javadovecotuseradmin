@@ -105,7 +105,7 @@ public final class SyncStatusRabbitMqConsumer {
         factory.setPassword(AppConfig.get("rabbitmq.password", ""));
         factory.setAutomaticRecoveryEnabled(false); // our own runLoop() is the one recovery mechanism
 
-        connection = factory.newConnection("javaDovecotAdmin-sync-status-consumer");
+        connection = factory.newConnection("tomcatdovecotuseradmin-sync-status-consumer");
         Channel channel = connection.createChannel();
 
         String exchange = AppConfig.get("rabbitmq.exchange", "mailacct.events");

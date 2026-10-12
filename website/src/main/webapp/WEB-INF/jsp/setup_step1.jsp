@@ -25,7 +25,7 @@
                 </select>
             </label>
             <label><%= msgs.get("setup.step1.dbName") %>
-                <input type="text" name="dbName" value="javadovecotadmin" required></label>
+                <input type="text" name="dbName" value="tomcatdovecotuseradmin" required></label>
             <button type="submit"><%= msgs.get("setup.step1.continue") %></button>
         </form>
     </div>

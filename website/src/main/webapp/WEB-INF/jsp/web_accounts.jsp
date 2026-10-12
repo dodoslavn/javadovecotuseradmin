@@ -53,7 +53,6 @@
                             <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.enable") %></button>
                         <% } %>
                     </form>
-                    <span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span>
                 </div>
 
                 <label><%= msgs.get("webAccounts.field.password") %>

@@ -1,4 +1,4 @@
-# javaDovecotAdmin
+# tomcatdovecotuseradmin
 A web interface written in plain Java (Servlets + JSP, no framework) for managing Dovecot
 mail accounts for one mail server, without that mail server depending on a database — it
 keeps reading local flat files. The admin website has its own MariaDB database; that's
@@ -44,7 +44,7 @@ reinstalling everything:
 Or force every step to run again:
 > ./install/install.sh --force all
 
-Once the installer finishes, visit `http://<this-host>/javaDovecotAdmin/` to run the first-time
+Once the installer finishes, visit `http://<this-host>/tomcatdovecotuseradmin/` to run the first-time
 setup wizard — it walks through choosing a database, creating it, and creating the first admin
 account.
 

@@ -8,7 +8,7 @@ SRC="$ROOT/src/main/java"
 WEBAPP="$ROOT/src/main/webapp"
 BUILD="$ROOT/build"
 CLASSES="$BUILD/WEB-INF/classes"
-WAR="$ROOT/javaDovecotAdmin.war"
+WAR="$ROOT/tomcatdovecotuseradmin.war"
 
 rm -rf "$BUILD" "$WAR"
 mkdir -p "$CLASSES"

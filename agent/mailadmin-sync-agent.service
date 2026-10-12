@@ -1,5 +1,5 @@
 [Unit]
-Description=javaDovecotAdmin sync agent — keeps Dovecot passdb in sync via RabbitMQ
+Description=tomcatdovecotuseradmin sync agent — keeps Dovecot passdb in sync via RabbitMQ
 After=network-online.target mariadb.service
 Wants=network-online.target
 

@@ -4,7 +4,7 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
 
-    <display-name>javaDovecotAdmin</display-name>
+    <display-name>tomcatdovecotuseradmin</display-name>
 
     <!-- Explicit filter order (not @WebFilter) — must run SetupGateFilter, then LocaleFilter,
          then AuthFilter, in that exact order; annotation-scanned filter order isn't guaranteed. -->

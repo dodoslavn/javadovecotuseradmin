@@ -16,9 +16,9 @@ log "doveadm available"
 ss -tln | grep -q ':80 ' || error "nothing listening on port 80"
 log "port 80 listening"
 
-code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1/javaDovecotAdmin/ || true)
+code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1/tomcatdovecotuseradmin/ || true)
 [ "$code" = "302" ] || [ "$code" = "200" ] || error "app did not respond as expected on port 80 (got HTTP ${code})"
-log "app responding on http://127.0.0.1/javaDovecotAdmin/ (HTTP ${code})"
+log "app responding on http://127.0.0.1/tomcatdovecotuseradmin/ (HTTP ${code})"
 
 echo ""
 log "All checks passed."

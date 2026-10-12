@@ -1,4 +1,4 @@
-# javaDovecotAdmin — Project Plan
+# tomcatdovecotuseradmin — Project Plan
 
 ## Goal
 A web UI to manage Dovecot mail accounts for one mail server, without that server depending
@@ -35,7 +35,7 @@ it at production credentials is still outstanding (see "Deferred").
 
 ## Repository Structure
 ```
-javaDovecotAdmin/
+tomcatdovecotuseradmin/
 ├── PLAN.md
 ├── README.md
 ├── install/
@@ -71,7 +71,7 @@ javaDovecotAdmin/
         │   ├── dao/          # Database, WebAccountDao, DovecotAccountDao, LinkDao, AuditLogDao
         │   ├── service/      # PasswordService, AppConfig, SessionUtil, AuditService, Messages, SentryReporter, SchemaInstaller
         │   └── servlet/      # one servlet per route + AuthFilter, LocaleFilter, SetupGateFilter, SetupServlet
-        ├── resources/i18n/   # messages.properties (English only today; plumbing supports more)
+        ├── resources/i18n/   # messages_en.properties (English only today; plumbing supports more)
         └── webapp/
             ├── WEB-INF/jsp/  # one JSP per page + nav.jspf/footer.jspf fragments
             ├── WEB-INF/lib/  # mariadb-java-client.jar, jbcrypt.jar, sentry-java (vendored)

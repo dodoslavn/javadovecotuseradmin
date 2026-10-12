@@ -49,7 +49,7 @@ public final class RabbitMqPublisher {
         factory.setUsername(AppConfig.get("rabbitmq.username", ""));
         factory.setPassword(AppConfig.get("rabbitmq.password", ""));
 
-        try (Connection connection = factory.newConnection("javaDovecotAdmin-publisher");
+        try (Connection connection = factory.newConnection("tomcatdovecotuseradmin-publisher");
              Channel channel = connection.createChannel()) {
             String exchange = AppConfig.get("rabbitmq.exchange", "mailacct.events");
             channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC, true);

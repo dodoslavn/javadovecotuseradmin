@@ -1,5 +1,5 @@
 #!/bin/bash
-# javaDovecotAdmin installer orchestrator
+# tomcatdovecotuseradmin installer orchestrator
 # Runs all steps in order. Each step is idempotent — safe to re-run.
 # On failure: fix the issue, re-run this script. Completed steps are skipped.
 #
@@ -23,7 +23,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BLUE}======================================${NC}"
-echo -e "${BLUE}  javaDovecotAdmin installer${NC}"
+echo -e "${BLUE}  tomcatdovecotuseradmin installer${NC}"
 echo -e "${BLUE}======================================${NC}"
 echo ""
 
@@ -91,6 +91,6 @@ echo -e "${GREEN}======================================${NC}"
 echo -e "${GREEN}  Installation complete!${NC}"
 echo -e "${GREEN}======================================${NC}"
 echo ""
-echo "Visit http://<this-host>/javaDovecotAdmin/ to run the first-time setup wizard"
+echo "Visit http://<this-host>/tomcatdovecotuseradmin/ to run the first-time setup wizard"
 echo "(choose a database, create it, and create the first admin account)."
 echo ""

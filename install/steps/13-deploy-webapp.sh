@@ -8,10 +8,10 @@ info "Building the WAR..."
 bash "${WEBSITE_DIR}/build.sh" || error "build.sh failed"
 
 info "Deploying to Tomcat..."
-rm -rf /var/lib/tomcat10/webapps/javaDovecotAdmin /var/lib/tomcat10/webapps/javaDovecotAdmin.war
-cp "${WEBSITE_DIR}/javaDovecotAdmin.war" /var/lib/tomcat10/webapps/javaDovecotAdmin.war || error "Failed to copy WAR to Tomcat webapps"
+rm -rf /var/lib/tomcat10/webapps/tomcatdovecotuseradmin /var/lib/tomcat10/webapps/tomcatdovecotuseradmin.war
+cp "${WEBSITE_DIR}/tomcatdovecotuseradmin.war" /var/lib/tomcat10/webapps/tomcatdovecotuseradmin.war || error "Failed to copy WAR to Tomcat webapps"
 
 systemctl is-active tomcat10 >/dev/null 2>&1 || systemctl start tomcat10
-log "javaDovecotAdmin.war deployed"
+log "tomcatdovecotuseradmin.war deployed"
 
 complete_step
