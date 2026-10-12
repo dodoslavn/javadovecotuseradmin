@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="eu.fordo.mailadmin.service.Messages" %>
+<%@ page import="java.util.List, eu.fordo.mailadmin.model.WebAccount, eu.fordo.mailadmin.service.Messages" %>
 <% Messages msgs = Messages.of(request); %>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,6 +25,21 @@
                 <input type="text" name="username" placeholder="user@example.com" value="<%= request.getAttribute("submittedUsername") != null ? request.getAttribute("submittedUsername") : "" %>" required autofocus></label>
             <label><%= msgs.get("mailAccounts.create.password") %>
                 <input type="password" name="password" required></label>
+            <label><%= msgs.get("mailAccounts.create.managedBy") %>
+                <select name="webAccountId">
+                    <option value=""><%= msgs.get("mailAccounts.pairedWith.none") %></option>
+                    <%
+                        List<WebAccount> webAccounts = (List<WebAccount>) request.getAttribute("webAccounts");
+                        if (webAccounts != null) {
+                            for (WebAccount w : webAccounts) {
+                    %>
+                        <option value="<%= w.getId() %>"><%= w.getUsername() %></option>
+                    <% } } %>
+                </select></label>
+            <div class="checkbox-row">
+                <input type="checkbox" id="createDisabled" name="createDisabled" value="true">
+                <label for="createDisabled"><%= msgs.get("mailAccounts.create.disabled") %></label>
+            </div>
             <button type="submit"><%= msgs.get("mailAccounts.create.submit") %></button>
         </form>
     </div>

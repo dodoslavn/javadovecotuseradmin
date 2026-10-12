@@ -33,6 +33,12 @@ public class DovecotAccountServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getServletPath().endsWith("/new")) {
+            try {
+                req.setAttribute("webAccounts", webAccountDao.findAll());
+            } catch (SQLException e) {
+                SentryReporter.captureException(e);
+                throw new ServletException(e);
+            }
             req.getRequestDispatcher("/WEB-INF/jsp/dovecot_account_new.jsp").forward(req, resp);
             return;
         }
@@ -57,6 +63,7 @@ public class DovecotAccountServlet extends HttpServlet {
             if ("create".equals(action)) {
                 create(req);
                 if (req.getAttribute("errorKey") != null) {
+                    req.setAttribute("webAccounts", webAccountDao.findAll());
                     req.getRequestDispatcher("/WEB-INF/jsp/dovecot_account_new.jsp").forward(req, resp);
                     return;
                 }
@@ -88,6 +95,9 @@ public class DovecotAccountServlet extends HttpServlet {
     private void create(HttpServletRequest req) throws SQLException, IOException, InterruptedException {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
+        boolean createDisabled = "true".equals(req.getParameter("createDisabled"));
+        String webAccountIdParam = req.getParameter("webAccountId");
+        Long webAccountId = (webAccountIdParam == null || webAccountIdParam.isBlank()) ? null : Long.parseLong(webAccountIdParam);
 
         if (dovecotAccountDao.findByUsername(username).isPresent()) {
             req.setAttribute("errorKey", "mailAccounts.error.duplicate");
@@ -96,9 +106,18 @@ public class DovecotAccountServlet extends HttpServlet {
         }
 
         String hash = passwordService.hashDovecotPassword(password);
-        long id = dovecotAccountDao.create(username, hash);
-        auditService.record(req, "dovecot_account_created", "dovecot_account", id, "username=" + username);
-        RabbitMqPublisher.publishIfAutoSyncEnabled("auto: created " + username);
+        long id = dovecotAccountDao.create(username, hash, createDisabled ? "disabled" : "active");
+        String detail = "username=" + username + (createDisabled ? " (created disabled)" : "");
+        auditService.record(req, "dovecot_account_created", "dovecot_account", id, detail);
+
+        if (webAccountId != null) {
+            linkDao.setPairing(id, webAccountId);
+            auditService.record(req, "link_created", "dovecot_account", id, "webAccountId=" + webAccountId);
+        }
+
+        if (!createDisabled) {
+            RabbitMqPublisher.publishIfAutoSyncEnabled("auto: created " + username);
+        }
     }
 
     private void setStatus(HttpServletRequest req, String status) throws SQLException {

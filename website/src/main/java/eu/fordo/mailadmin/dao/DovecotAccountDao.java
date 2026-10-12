@@ -78,13 +78,13 @@ public class DovecotAccountDao {
         }
     }
 
-    public long create(String username, String passwordHash) throws SQLException {
-        String sql = "INSERT INTO dovecot_accounts (username, password_hash, status) " +
-                "VALUES (?, ?, 'active')";
+    public long create(String username, String passwordHash, String status) throws SQLException {
+        String sql = "INSERT INTO dovecot_accounts (username, password_hash, status) VALUES (?, ?, ?)";
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, username);
             ps.setString(2, passwordHash);
+            ps.setString(3, status);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 keys.next();
