@@ -189,6 +189,13 @@ tr:last-child td { border-bottom: none; }
 .account-card-id { display: flex; align-items: center; gap: .6rem; min-width: 0; }
 .account-card-meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .account-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding-top: .5rem; border-top: 1px solid var(--border); }
+/* One labeled field per row (Name, Active, Password, Role) inside an account card, instead
+   of several separate inline-forms crammed into table-style columns — the Active toggle is
+   still its own form (so it submits instantly, without needing the Save button below), but
+   the input/select it sits between all share one "update" form via form="<id>" so renaming,
+   changing the role, and rotating the password collapse into a single Save click. */
+.account-active-row { display: flex; align-items: center; gap: .5rem; }
+.account-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 /* Same overflow problem a plain table had — an unconstrained input[type=text/password]
    defaults to ~20ch wide, which looks bulky stacked inline with a select + badges + a
    couple of buttons in one card row. */

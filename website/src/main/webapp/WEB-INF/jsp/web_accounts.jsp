@@ -25,44 +25,50 @@
             List<WebAccount> accounts = (List<WebAccount>) request.getAttribute("accounts");
             for (WebAccount a : accounts) {
         %>
+        <%
+            String formId = "wa-update-" + a.getId();
+        %>
         <div class="account-card<%= a.isEnabled() ? "" : " row-disabled" %>">
-            <div class="account-card-main">
-                <div class="account-card-id">
+            <%-- Hidden fields only — Name/Password/Role below are linked in via form="<%=formId%>"
+                 so the "Active" toggle (a separate, immediate action) can sit visually between
+                 them as its own form without splitting this one across the DOM. --%>
+            <form id="<%= formId %>" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="id" value="<%= a.getId() %>">
+            </form>
+
+            <div class="form-grid">
+                <label><%= msgs.get("webAccounts.field.name") %>
+                    <input type="text" name="newUsername" form="<%= formId %>" value="<%= a.getUsername() %>"></label>
+
+                <div class="account-active-row">
+                    <span><%= msgs.get("webAccounts.field.active") %>:</span>
                     <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
-                        <input type="hidden" name="action" value="rename">
                         <input type="hidden" name="id" value="<%= a.getId() %>">
-                        <input type="text" name="newUsername" value="<%= a.getUsername() %>">
-                        <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.rename") %></button>
+                        <% if (a.isEnabled()) { %>
+                            <input type="hidden" name="action" value="disable">
+                            <button type="submit" class="btn-sm btn-danger"><%= msgs.get("webAccounts.action.disable") %></button>
+                        <% } else { %>
+                            <input type="hidden" name="action" value="enable">
+                            <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.enable") %></button>
+                        <% } %>
                     </form>
+                    <span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span>
                 </div>
-                <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
-                    <input type="hidden" name="action" value="changeRole">
-                    <input type="hidden" name="id" value="<%= a.getId() %>">
-                    <select name="role" onchange="this.form.submit()">
+
+                <label><%= msgs.get("webAccounts.field.password") %>
+                    <input type="password" name="newPassword" form="<%= formId %>" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8"></label>
+
+                <label><%= msgs.get("webAccounts.field.role") %>
+                    <select name="role" form="<%= formId %>">
                         <option value="USER" <%= a.getRole() == Role.USER ? "selected" : "" %>>USER</option>
                         <option value="ADMIN" <%= a.getRole() == Role.ADMIN ? "selected" : "" %>>ADMIN</option>
-                    </select>
-                </form>
-                <span class="badge <%= a.isEnabled() ? "badge-ok" : "badge-off" %>"><%= a.isEnabled() %></span>
-                <span class="account-card-meta"><%= DateFormatter.format(a.getCreatedAt()) %></span>
-            </div>
-            <div class="account-card-actions">
-                <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
-                    <input type="hidden" name="id" value="<%= a.getId() %>">
-                    <% if (a.isEnabled()) { %>
-                        <input type="hidden" name="action" value="disable">
-                        <button type="submit" class="btn-sm btn-danger"><%= msgs.get("webAccounts.action.disable") %></button>
-                    <% } else { %>
-                        <input type="hidden" name="action" value="enable">
-                        <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.enable") %></button>
-                    <% } %>
-                </form>
-                <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
-                    <input type="hidden" name="action" value="resetPassword">
-                    <input type="hidden" name="id" value="<%= a.getId() %>">
-                    <input type="password" name="newPassword" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8">
-                    <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.resetPassword") %></button>
-                </form>
+                    </select></label>
+
+                <div class="account-card-footer">
+                    <span class="account-card-meta"><%= DateFormatter.format(a.getCreatedAt()) %></span>
+                    <button type="submit" form="<%= formId %>"><%= msgs.get("webAccounts.action.save") %></button>
+                </div>
             </div>
         </div>
         <% } %>

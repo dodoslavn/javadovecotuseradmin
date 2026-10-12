@@ -62,15 +62,11 @@ public class WebAccountServlet extends HttpServlet {
                 setEnabled(req, false);
             } else if ("enable".equals(action)) {
                 setEnabled(req, true);
-            } else if ("resetPassword".equals(action)) {
-                resetPassword(req);
-            } else if ("changeRole".equals(action)) {
-                changeRole(req, resp);
+            } else if ("update".equals(action)) {
+                update(req, resp);
                 if (req.getAttribute("errorKey") != null) {
-                    return; // changeRole already re-rendered on failure
+                    return; // update() already re-rendered on failure
                 }
-            } else if ("rename".equals(action)) {
-                rename(req);
             }
             if (req.getAttribute("errorKey") != null) {
                 doGet(req, resp); // re-render the list with the error instead of losing it on redirect
@@ -107,34 +103,23 @@ public class WebAccountServlet extends HttpServlet {
         auditService.record(req, enabled ? "web_account_enabled" : "web_account_disabled", "web_account", id, "username=" + username);
     }
 
-    private void resetPassword(HttpServletRequest req) throws SQLException {
-        long id = Long.parseLong(req.getParameter("id"));
-        String newPassword = req.getParameter("newPassword");
-        if (newPassword == null || newPassword.length() < 8) {
-            req.setAttribute("errorKey", "webAccounts.error.passwordTooShort");
-            return;
-        }
-        webAccountDao.updatePasswordHash(id, passwordService.hashWebPassword(newPassword));
-        auditService.record(req, "web_account_password_reset", "web_account", id, "by admin");
-    }
-
-    private void changeRole(HttpServletRequest req, HttpServletResponse resp) throws SQLException, ServletException, IOException {
-        long id = Long.parseLong(req.getParameter("id"));
-        if (id == SessionUtil.currentWebAccountId(req)) {
-            req.setAttribute("errorKey", "webAccounts.error.selfRoleChange");
-            doGet(req, resp);
-            return;
-        }
-        Role role = Role.valueOf(req.getParameter("role"));
-        webAccountDao.setRole(id, role);
-        auditService.record(req, "web_account_role_changed", "web_account", id, "role=" + role);
-    }
-
-    private void rename(HttpServletRequest req) throws SQLException {
+    /**
+     * One card, one Save button: rename + role + (optional) password rotation all land in a
+     * single form submission rather than three separate inline-forms each with their own
+     * button. Blank password field = leave the current password unchanged, same convention
+     * as the RabbitMQ password field on Server configuration. Enable/disable stays a
+     * separate, single-click form (see "disable"/"enable" above) since that's the one action
+     * an admin would want to fire immediately without also touching name/role/password.
+     */
+    private void update(HttpServletRequest req, HttpServletResponse resp) throws SQLException, ServletException, IOException {
         long id = Long.parseLong(req.getParameter("id"));
         String newUsername = req.getParameter("newUsername");
+        String newPassword = req.getParameter("newPassword");
+        Role role = Role.valueOf(req.getParameter("role"));
+
         if (newUsername == null || newUsername.isBlank()) {
             req.setAttribute("errorKey", "webAccounts.error.usernameRequired");
+            doGet(req, resp);
             return;
         }
         newUsername = newUsername.trim();
@@ -142,10 +127,31 @@ public class WebAccountServlet extends HttpServlet {
         Optional<WebAccount> existing = webAccountDao.findByUsername(newUsername);
         if (existing.isPresent() && existing.get().getId() != id) {
             req.setAttribute("errorKey", "webAccounts.error.duplicate");
+            doGet(req, resp);
             return;
         }
 
+        if (newPassword != null && !newPassword.isBlank() && newPassword.length() < 8) {
+            req.setAttribute("errorKey", "webAccounts.error.passwordTooShort");
+            doGet(req, resp);
+            return;
+        }
+
+        Optional<WebAccount> self = webAccountDao.findById(id);
+        boolean isSelf = id == SessionUtil.currentWebAccountId(req);
+        if (isSelf && self.isPresent() && self.get().getRole() != role) {
+            req.setAttribute("errorKey", "webAccounts.error.selfRoleChange");
+            doGet(req, resp);
+            return;
+        }
+
+        StringBuilder detail = new StringBuilder("newUsername=").append(newUsername).append(" role=").append(role);
         webAccountDao.setUsername(id, newUsername);
-        auditService.record(req, "web_account_renamed", "web_account", id, "newUsername=" + newUsername);
+        webAccountDao.setRole(id, role);
+        if (newPassword != null && !newPassword.isBlank()) {
+            webAccountDao.updatePasswordHash(id, passwordService.hashWebPassword(newPassword));
+            detail.append(" (password rotated)");
+        }
+        auditService.record(req, "web_account_updated", "web_account", id, detail.toString());
     }
 }
