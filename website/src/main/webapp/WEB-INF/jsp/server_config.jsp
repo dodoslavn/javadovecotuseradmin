@@ -12,7 +12,7 @@
 </head>
 <body>
 <%@ include file="nav.jspf" %>
-<main>
+<main class="config-page">
     <h2><%= msgs.get("serverConfig.heading") %></h2>
     <p class="page-intro"><%= msgs.get("serverConfig.pageIntro") %></p>
     <div class="flash flash-info">
