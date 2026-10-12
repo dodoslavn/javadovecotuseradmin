@@ -58,16 +58,21 @@ CREATE TABLE schema_version (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT single_row CHECK (id = 1)
 ) ENGINE=InnoDB;
-INSERT INTO schema_version (id, version) VALUES (1, 2);
+INSERT INTO schema_version (id, version) VALUES (1, 3);
 
--- Reported by the sync agent on the mail server (POST /api/sync-status, bearer-token
--- authenticated — see SyncStatusApiServlet) after each run. Shown on the "Server
--- configuration" admin page as "last sync". The agent itself is not built yet.
+-- last_sync_at/status/detail: reported by the sync agent (agent/sync-agent.pl, on the mail
+-- server) over RabbitMQ after each run — see SyncStatusRabbitMqConsumer. Shown on the
+-- "Server configuration" admin page as "Last successful full sync".
+-- last_request_sent_at: when the website itself last successfully published the
+-- "something changed" signal (RabbitMqPublisher) — either the "Force sync now" button or,
+-- if enabled, an automatic mail-account change. Distinct from last_sync_at because sending
+-- the request doesn't mean the agent has finished (or even started) acting on it yet.
 CREATE TABLE sync_status (
-    id           TINYINT PRIMARY KEY DEFAULT 1,
-    last_sync_at TIMESTAMP NULL,
-    status       VARCHAR(16) NULL,
-    detail       VARCHAR(500) NULL,
-    updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                    TINYINT PRIMARY KEY DEFAULT 1,
+    last_sync_at          TIMESTAMP NULL,
+    status                VARCHAR(16) NULL,
+    detail                VARCHAR(500) NULL,
+    last_request_sent_at  TIMESTAMP NULL,
+    updated_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT single_row CHECK (id = 1)
 ) ENGINE=InnoDB;

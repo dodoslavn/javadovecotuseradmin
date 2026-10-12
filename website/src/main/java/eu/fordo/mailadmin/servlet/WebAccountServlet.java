@@ -52,16 +52,6 @@ public class WebAccountServlet extends HttpServlet {
                     req.getRequestDispatcher("/WEB-INF/jsp/web_account_new.jsp").forward(req, resp);
                     return;
                 }
-            } else if ("disable".equals(action)) {
-                long id = Long.parseLong(req.getParameter("id"));
-                if (id == SessionUtil.currentWebAccountId(req)) {
-                    req.setAttribute("errorKey", "webAccounts.error.selfDisable");
-                    doGet(req, resp);
-                    return;
-                }
-                setEnabled(req, false);
-            } else if ("enable".equals(action)) {
-                setEnabled(req, true);
             } else if ("update".equals(action)) {
                 update(req, resp);
                 if (req.getAttribute("errorKey") != null) {
@@ -96,26 +86,21 @@ public class WebAccountServlet extends HttpServlet {
         auditService.record(req, "web_account_created", "web_account", id, "username=" + username + " role=" + role);
     }
 
-    private void setEnabled(HttpServletRequest req, boolean enabled) throws SQLException {
-        long id = Long.parseLong(req.getParameter("id"));
-        String username = webAccountDao.findById(id).map(WebAccount::getUsername).orElse("#" + id);
-        webAccountDao.setEnabled(id, enabled);
-        auditService.record(req, enabled ? "web_account_enabled" : "web_account_disabled", "web_account", id, "username=" + username);
-    }
-
     /**
-     * One card, one Save button: rename + role + (optional) password rotation all land in a
-     * single form submission rather than three separate inline-forms each with their own
-     * button. Blank password field = leave the current password unchanged, same convention
-     * as the RabbitMQ password field on Server configuration. Enable/disable stays a
-     * separate, single-click form (see "disable"/"enable" above) since that's the one action
-     * an admin would want to fire immediately without also touching name/role/password.
+     * One card, one Save button: rename + role + active + (optional) password rotation all
+     * land in a single form submission rather than several separate inline-forms each with
+     * their own button. Blank password field = leave the current password unchanged, same
+     * convention as the RabbitMQ password field on Server configuration. The active checkbox
+     * change gets its own audit entry (web_account_enabled/disabled) on top of the general
+     * web_account_updated one, since enable/disable is worth being able to find on its own in
+     * the audit log even though it's no longer a separate click.
      */
     private void update(HttpServletRequest req, HttpServletResponse resp) throws SQLException, ServletException, IOException {
         long id = Long.parseLong(req.getParameter("id"));
         String newUsername = req.getParameter("newUsername");
         String newPassword = req.getParameter("newPassword");
         Role role = Role.valueOf(req.getParameter("role"));
+        boolean enabled = "true".equals(req.getParameter("enabled"));
 
         if (newUsername == null || newUsername.isBlank()) {
             req.setAttribute("errorKey", "webAccounts.error.usernameRequired");
@@ -144,6 +129,11 @@ public class WebAccountServlet extends HttpServlet {
             doGet(req, resp);
             return;
         }
+        if (isSelf && self.isPresent() && self.get().isEnabled() && !enabled) {
+            req.setAttribute("errorKey", "webAccounts.error.selfDisable");
+            doGet(req, resp);
+            return;
+        }
 
         StringBuilder detail = new StringBuilder("newUsername=").append(newUsername).append(" role=").append(role);
         webAccountDao.setUsername(id, newUsername);
@@ -153,5 +143,10 @@ public class WebAccountServlet extends HttpServlet {
             detail.append(" (password rotated)");
         }
         auditService.record(req, "web_account_updated", "web_account", id, detail.toString());
+
+        if (self.isPresent() && self.get().isEnabled() != enabled) {
+            webAccountDao.setEnabled(id, enabled);
+            auditService.record(req, enabled ? "web_account_enabled" : "web_account_disabled", "web_account", id, "username=" + newUsername);
+        }
     }
 }

@@ -14,4 +14,9 @@ public final class DateFormatter {
     public static String format(Instant instant) {
         return instant == null ? "" : FORMAT.format(instant) + " UTC";
     }
+
+    /** Same timestamp, without the trailing " UTC" — for tables whose column header already says it. */
+    public static String formatNoZone(Instant instant) {
+        return instant == null ? "" : FORMAT.format(instant);
+    }
 }

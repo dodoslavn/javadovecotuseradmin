@@ -21,7 +21,7 @@
             <input type="hidden" name="action" value="step1">
             <label><%= msgs.get("setup.step1.dbSystem") %>
                 <select name="dbSystem">
-                    <option value="mariadb">MySQL / MariaDB</option>
+                    <option value="mariadb">MariaDB</option>
                 </select>
             </label>
             <label><%= msgs.get("setup.step1.dbName") %>

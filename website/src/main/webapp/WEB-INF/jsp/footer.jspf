@@ -1,8 +1,47 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page import="java.util.LinkedHashMap, java.util.Map, java.util.Locale" %>
 <%-- Relies on the including page having already declared "Messages msgs" before this include --%>
+<%
+    // Native display name per language code — same set as the other admin tools in this
+    // family (see phpopenvpnadmin's web/lang/). Kept here rather than in a properties file
+    // since it must render correctly regardless of which language is currently active.
+    Map<String, String> languageNames = new LinkedHashMap<>();
+    languageNames.put("en", "English");
+    languageNames.put("cs", "Čeština");
+    languageNames.put("de", "Deutsch");
+    languageNames.put("es", "Español");
+    languageNames.put("hu", "Magyar");
+    languageNames.put("it", "Italiano");
+    languageNames.put("pl", "Polski");
+    languageNames.put("sk", "Slovenčina");
+    languageNames.put("uk", "Українська");
+
+    Locale resolvedLocale = (Locale) request.getAttribute("resolvedLocale");
+    String currentLang = resolvedLocale != null ? resolvedLocale.getLanguage() : "en";
+    String basePath = request.getRequestURI();
+%>
 <footer>
     <div class="footer-inner">
-        <span class="footer-brand"><%= msgs.get("app.title") %> - <span class="footer-version">v<%= msgs.get("app.version") %></span></span>
+        <span class="footer-brand"><%= msgs.get("app.title") %> - <span class="footer-version">v<%= msgs.get("app.version") %></span>
+            - <a href="https://github.com/dodoslavn/javadovecotuseradmin" class="footer-repo" target="_blank" rel="noopener">GitHub: dodoslavn/javadovecotuseradmin</a></span>
+        <div class="footer-langs">
+            <%
+                boolean first = true;
+                for (Map.Entry<String, String> entry : languageNames.entrySet()) {
+                    if (!first) { %> &middot; <% }
+                    first = false;
+                    if (entry.getKey().equals(currentLang)) {
+            %>
+                <span class="footer-lang-active"><%= entry.getValue() %></span>
+            <%
+                    } else {
+            %>
+                <a href="<%= basePath %>?lang=<%= entry.getKey() %>"><%= entry.getValue() %></a>
+            <%
+                    }
+                }
+            %>
+        </div>
     </div>
 </footer>
 </body></html>

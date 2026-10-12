@@ -20,7 +20,7 @@
         <table>
             <thead>
             <tr>
-                <th><%= msgs.get("auditLog.col.when") %></th>
+                <th class="col-nowrap"><%= msgs.get("auditLog.col.when") %></th>
                 <th><%= msgs.get("auditLog.col.actor") %></th>
                 <th><%= msgs.get("auditLog.col.action") %></th>
                 <th><%= msgs.get("auditLog.col.target") %></th>
@@ -33,7 +33,7 @@
                 for (AuditLogEntry e : entries) {
             %>
             <tr>
-                <td data-label="<%= msgs.get("auditLog.col.when") %>"><%= DateFormatter.format(e.getAt()) %></td>
+                <td class="col-nowrap" data-label="<%= msgs.get("auditLog.col.when") %>"><%= DateFormatter.formatNoZone(e.getAt()) %></td>
                 <td data-label="<%= msgs.get("auditLog.col.actor") %>"><%= e.getActorUsername() %></td>
                 <td data-label="<%= msgs.get("auditLog.col.action") %>"><%= e.getAction() %></td>
                 <td data-label="<%= msgs.get("auditLog.col.target") %>"><%= e.getTargetType() %> #<%= e.getTargetId() %></td>

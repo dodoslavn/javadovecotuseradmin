@@ -25,7 +25,6 @@
 
     <div class="section">
         <h3><%= msgs.get("serverConfig.mysql") %></h3>
-        <p class="muted"><%= msgs.get("serverConfig.mysqlReadOnlyHint") %></p>
         <div class="table-wrap">
         <table>
             <tr><th><%= msgs.get("serverConfig.dbUrl") %></th><td><%= request.getAttribute("dbUrl") %></td></tr>
@@ -35,6 +34,7 @@
             </td></tr>
         </table>
         </div>
+        <p class="muted"><%= msgs.get("serverConfig.mysqlReadOnlyHint") %> <code><%= (String) request.getAttribute("configFilePath") %></code></p>
     </div>
 
     <div class="section">
@@ -99,6 +99,13 @@
         <% } %>
         <div class="table-wrap">
         <table>
+            <tr><th><%= msgs.get("serverConfig.sync.lastRequestSent") %></th><td>
+                <% if (syncStatus != null && syncStatus.getLastRequestSentAt() != null) { %>
+                    <%= DateFormatter.format(syncStatus.getLastRequestSentAt()) %>
+                <% } else { %>
+                    <span class="muted"><%= msgs.get("serverConfig.sync.never") %></span>
+                <% } %>
+            </td></tr>
             <tr><th><%= msgs.get("serverConfig.sync.lastSync") %></th><td>
                 <% if (syncStatus != null && syncStatus.getLastSyncAt() != null) { %>
                     <%= DateFormatter.format(syncStatus.getLastSyncAt()) %>
@@ -109,7 +116,10 @@
                     <span class="muted"><%= msgs.get("serverConfig.sync.never") %></span>
                 <% } %>
             </td></tr>
-            <% if (syncStatus != null && syncStatus.getDetail() != null && !syncStatus.getDetail().isBlank()) { %>
+            <%-- Only shown on failure — the agent's own success detail (e.g. an account count)
+                 isn't something the website can verify independently, so it's not worth
+                 displaying as if it were; a failure's detail text is genuinely diagnostic. --%>
+            <% if (syncStatus != null && "error".equals(syncStatus.getStatus()) && syncStatus.getDetail() != null && !syncStatus.getDetail().isBlank()) { %>
             <tr><th><%= msgs.get("serverConfig.sync.detail") %></th><td><%= syncStatus.getDetail() %></td></tr>
             <% } %>
         </table>

@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.List, eu.fordo.mailadmin.model.WebAccount, eu.fordo.mailadmin.model.Role, eu.fordo.mailadmin.service.Messages, eu.fordo.mailadmin.service.DateFormatter" %>
+<%@ page import="java.util.List, eu.fordo.mailadmin.model.WebAccount, eu.fordo.mailadmin.model.Role, eu.fordo.mailadmin.service.Messages" %>
 <% Messages msgs = Messages.of(request); %>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,50 +25,31 @@
             List<WebAccount> accounts = (List<WebAccount>) request.getAttribute("accounts");
             for (WebAccount a : accounts) {
         %>
-        <%
-            String formId = "wa-update-" + a.getId();
-        %>
         <div class="account-card<%= a.isEnabled() ? "" : " row-disabled" %>">
-            <%-- Hidden fields only — Name/Password/Role below are linked in via form="<%=formId%>"
-                 so the "Active" toggle (a separate, immediate action) can sit visually between
-                 them as its own form without splitting this one across the DOM. --%>
-            <form id="<%= formId %>" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
+            <form method="post" action="${pageContext.request.contextPath}/admin/web-accounts" class="form-grid">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="id" value="<%= a.getId() %>">
-            </form>
 
-            <div class="form-grid">
                 <label><%= msgs.get("webAccounts.field.name") %>
-                    <input type="text" name="newUsername" form="<%= formId %>" value="<%= a.getUsername() %>"></label>
-
-                <div class="account-active-row">
-                    <span><%= msgs.get("webAccounts.field.active") %>:</span>
-                    <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/web-accounts">
-                        <input type="hidden" name="id" value="<%= a.getId() %>">
-                        <% if (a.isEnabled()) { %>
-                            <input type="hidden" name="action" value="disable">
-                            <button type="submit" class="btn-sm btn-danger"><%= msgs.get("webAccounts.action.disable") %></button>
-                        <% } else { %>
-                            <input type="hidden" name="action" value="enable">
-                            <button type="submit" class="btn-sm"><%= msgs.get("webAccounts.action.enable") %></button>
-                        <% } %>
-                    </form>
-                </div>
+                    <input type="text" name="newUsername" value="<%= a.getUsername() %>"></label>
 
                 <label><%= msgs.get("webAccounts.field.password") %>
-                    <input type="password" name="newPassword" form="<%= formId %>" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8"></label>
+                    <input type="password" name="newPassword" placeholder="<%= msgs.get("webAccounts.newPassword.placeholder") %>" minlength="8"></label>
 
                 <label><%= msgs.get("webAccounts.field.role") %>
-                    <select name="role" form="<%= formId %>">
+                    <select name="role">
                         <option value="USER" <%= a.getRole() == Role.USER ? "selected" : "" %>>USER</option>
                         <option value="ADMIN" <%= a.getRole() == Role.ADMIN ? "selected" : "" %>>ADMIN</option>
                     </select></label>
 
                 <div class="account-card-footer">
-                    <span class="account-card-meta"><%= DateFormatter.format(a.getCreatedAt()) %></span>
-                    <button type="submit" form="<%= formId %>"><%= msgs.get("webAccounts.action.save") %></button>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="wa-active-<%= a.getId() %>" name="enabled" value="true" <%= a.isEnabled() ? "checked" : "" %>>
+                        <label for="wa-active-<%= a.getId() %>"><%= msgs.get("webAccounts.field.active") %></label>
+                    </div>
+                    <button type="submit"><%= msgs.get("webAccounts.action.save") %></button>
                 </div>
-            </div>
+            </form>
         </div>
         <% } %>
     </div>

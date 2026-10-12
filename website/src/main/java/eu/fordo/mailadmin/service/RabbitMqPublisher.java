@@ -4,6 +4,7 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import eu.fordo.mailadmin.dao.SyncStatusDao;
 
 import java.nio.charset.StandardCharsets;
 
@@ -55,6 +56,15 @@ public final class RabbitMqPublisher {
             channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC, true);
             String body = (reason == null || reason.isBlank()) ? "changed" : reason;
             channel.basicPublish(exchange, ROUTING_KEY, null, body.getBytes(StandardCharsets.UTF_8));
+        }
+
+        // Record separately from the try-with-resources above: the publish itself already
+        // succeeded by this point, so a DB hiccup recording it must not make the caller think
+        // the publish failed.
+        try {
+            new SyncStatusDao().recordRequestSent();
+        } catch (Exception e) {
+            SentryReporter.captureException(e);
         }
     }
 }
