@@ -134,6 +134,11 @@ h3 { font-size: 15px; margin-bottom: 1rem; color: var(--muted); text-transform: 
 /* ── Page header (heading + a primary action, e.g. "+ Add account") ── */
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .page-header h2 { margin-bottom: 0; }
+
+/* One or two sentences under the heading saying what this page is for. Pulls up against
+   the heading's own margin-bottom (1.5rem) rather than stacking two large gaps. */
+h2 + .page-intro, .page-header + .page-intro { margin-top: -1rem; }
+.page-intro { color: var(--muted); font-size: 13px; line-height: 1.5; max-width: 680px; margin-bottom: 1.5rem; }
 .back-link { display: inline-block; margin-bottom: 1rem; color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500; }
 .back-link:hover { color: var(--primary); }
 .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }

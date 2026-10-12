@@ -14,6 +14,7 @@
 <%@ include file="nav.jspf" %>
 <main>
     <h2><%= msgs.get("account.heading") %></h2>
+    <p class="page-intro"><%= msgs.get("account.intro") %></p>
     <% if (request.getAttribute("errorKey") != null) { %><div class="flash flash-error"><%= msgs.get((String) request.getAttribute("errorKey")) %></div><% } %>
     <% if (request.getAttribute("success") != null) { %><div class="flash flash-success"><%= msgs.get("account.success") %></div><% } %>
 

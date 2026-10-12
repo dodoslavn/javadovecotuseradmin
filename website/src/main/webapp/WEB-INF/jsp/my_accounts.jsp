@@ -14,6 +14,7 @@
 <%@ include file="nav.jspf" %>
 <main>
     <h2><%= msgs.get("myAccounts.heading") %></h2>
+    <p class="page-intro"><%= msgs.get("myAccounts.intro") %></p>
     <% if (request.getAttribute("errorKey") != null) { %><div class="flash flash-error"><%= msgs.get((String) request.getAttribute("errorKey")) %></div><% } %>
     <%
         List<DovecotAccount> accounts = (List<DovecotAccount>) request.getAttribute("accounts");

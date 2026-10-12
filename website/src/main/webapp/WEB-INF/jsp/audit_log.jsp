@@ -14,6 +14,7 @@
 <%@ include file="nav.jspf" %>
 <main>
     <h2><%= msgs.get("auditLog.heading") %></h2>
+    <p class="page-intro"><%= msgs.get("auditLog.intro") %></p>
     <div class="section">
         <div class="table-wrap">
         <table>

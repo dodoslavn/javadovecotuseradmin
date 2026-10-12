@@ -15,6 +15,7 @@
 <main>
     <a class="back-link" href="${pageContext.request.contextPath}/admin/web-accounts"><%= msgs.get("webAccounts.action.back") %></a>
     <h2><%= msgs.get("webAccounts.create.legend") %></h2>
+    <p class="page-intro"><%= msgs.get("webAccounts.create.intro") %></p>
     <% if (request.getAttribute("errorKey") != null) { %><div class="flash flash-error"><%= msgs.get((String) request.getAttribute("errorKey")) %></div><% } %>
 
     <div class="section">

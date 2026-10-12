@@ -15,6 +15,7 @@
 <main>
     <a class="back-link" href="${pageContext.request.contextPath}/admin/dovecot-accounts"><%= msgs.get("mailAccounts.action.back") %></a>
     <h2><%= msgs.get("mailAccounts.create.legend") %></h2>
+    <p class="page-intro"><%= msgs.get("mailAccounts.create.intro") %></p>
     <% if (request.getAttribute("errorKey") != null) { %><div class="flash flash-error"><%= msgs.get((String) request.getAttribute("errorKey")) %></div><% } %>
 
     <div class="section">

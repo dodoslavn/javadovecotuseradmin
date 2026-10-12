@@ -17,6 +17,7 @@
         <h2><%= msgs.get("webAccounts.heading") %></h2>
         <a class="btn" href="${pageContext.request.contextPath}/admin/web-accounts/new"><%= msgs.get("webAccounts.action.addNew") %></a>
     </div>
+    <p class="page-intro"><%= msgs.get("webAccounts.intro") %></p>
     <% if (request.getAttribute("errorKey") != null) { %><div class="flash flash-error"><%= msgs.get((String) request.getAttribute("errorKey")) %></div><% } %>
 
     <div class="account-list">

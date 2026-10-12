@@ -17,6 +17,7 @@
         <h2><%= msgs.get("mailAccounts.heading") %></h2>
         <a class="btn" href="${pageContext.request.contextPath}/admin/dovecot-accounts/new"><%= msgs.get("mailAccounts.action.addNew") %></a>
     </div>
+    <p class="page-intro"><%= msgs.get("mailAccounts.intro") %></p>
     <% if (request.getAttribute("errorKey") != null) { %><div class="flash flash-error"><%= msgs.get((String) request.getAttribute("errorKey")) %></div><% } %>
 
     <div class="account-list">

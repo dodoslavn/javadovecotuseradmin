@@ -14,6 +14,7 @@
 <%@ include file="nav.jspf" %>
 <main>
     <h2><%= msgs.get("serverConfig.heading") %></h2>
+    <p class="page-intro"><%= msgs.get("serverConfig.pageIntro") %></p>
     <div class="flash flash-info">
         <%= msgs.get("serverConfig.intro") %>
         <code><%= (String) request.getAttribute("configFilePath") %></code>
