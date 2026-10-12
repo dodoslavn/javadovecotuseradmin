@@ -1,0 +1,33 @@
+# javaDovecotAdmin sync agent config — copy to /etc/mailadmin/sync-agent.conf (root:root, 600;
+# this file holds a live DB password and RabbitMQ password, unlike the website's own
+# config.properties which is root:tomcat 660 — nothing but root needs to read this one).
+#
+# db.* — a narrowly-scoped MariaDB user with SELECT only on dovecot_accounts, nothing else.
+# Create it once on the DB host:
+#   CREATE USER 'mailsync'@'127.0.0.1' IDENTIFIED BY 'change-me';
+#   GRANT SELECT ON mailadmin.dovecot_accounts TO 'mailsync'@'127.0.0.1';
+db.host=127.0.0.1
+db.port=3306
+db.name=mailadmin
+db.user=mailsync
+db.password=change-me
+
+# rabbitmq.* — reuse the same broker/exchange the website is configured with on its
+# Server configuration page (see /etc/mailadmin/config.properties on the website host).
+rabbitmq.host=127.0.0.1
+rabbitmq.port=5672
+rabbitmq.vhost=/
+rabbitmq.username=mailadmin
+rabbitmq.password=change-me
+rabbitmq.exchange=mailacct.events
+
+# Where Dovecot's passwd-file passdb actually lives (dovecot -n | grep passdb).
+dovecot.passdb_path=/etc/dovecot/passdb
+
+# Command run after a successful passdb rewrite. Override only if "doveadm reload" isn't
+# right for this host's Dovecot setup (e.g. a non-standard service manager).
+dovecot.reload_command=doveadm reload
+
+# How long to wait after the last account.changed signal before actually syncing, so a burst
+# of edits (e.g. an admin editing several accounts in a row) collapses into one run.
+sync.debounce_seconds=5

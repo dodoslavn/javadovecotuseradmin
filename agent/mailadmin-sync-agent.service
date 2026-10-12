@@ -1,0 +1,16 @@
+[Unit]
+Description=javaDovecotAdmin sync agent — keeps Dovecot passdb in sync via RabbitMQ
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/perl /opt/mailadmin/sync-agent.pl
+Restart=on-failure
+RestartSec=5
+# Needs root: passdb typically isn't world-writable and "doveadm reload" needs the
+# privilege to signal the running Dovecot master process.
+User=root
+
+[Install]
+WantedBy=multi-user.target
