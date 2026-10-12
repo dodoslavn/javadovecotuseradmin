@@ -184,7 +184,7 @@ tr:last-child td { border-bottom: none; }
     flex-direction: column;
     gap: .6rem;
 }
-.account-card.row-disabled { background: var(--bg); }
+.account-card.row-disabled, .section.row-disabled { background: var(--bg); }
 .account-card-main { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
 .account-card-id { display: flex; align-items: center; gap: .6rem; min-width: 0; }
 .account-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding-top: .5rem; border-top: 1px solid var(--border); }

@@ -25,25 +25,26 @@
         for (DovecotAccount a : accounts) {
             boolean active = "active".equals(a.getStatus());
     %>
-        <div class="section">
-            <h3><%= a.getUsername() %> <span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span></h3>
+        <div class="section<%= active ? "" : " row-disabled" %>">
+            <div class="page-header">
+                <h3 style="margin-bottom:0;"><%= a.getUsername() %></h3>
+                <form method="post" action="${pageContext.request.contextPath}/my-accounts">
+                    <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">
+                    <% if (active) { %>
+                        <input type="hidden" name="action" value="disable">
+                        <button type="submit" class="btn-danger btn-sm"><%= msgs.get("myAccounts.disable") %></button>
+                    <% } else { %>
+                        <input type="hidden" name="action" value="enable">
+                        <button type="submit" class="btn-sm"><%= msgs.get("myAccounts.enable") %></button>
+                    <% } %>
+                </form>
+            </div>
 
             <form method="post" action="${pageContext.request.contextPath}/my-accounts" class="form-grid">
                 <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">
                 <label><%= msgs.get("myAccounts.newPassword") %>
                     <input type="password" name="newPassword" required></label>
                 <button type="submit"><%= msgs.get("myAccounts.changePassword") %></button>
-            </form>
-
-            <form method="post" action="${pageContext.request.contextPath}/my-accounts" style="margin-top:.75rem;">
-                <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">
-                <% if (active) { %>
-                    <input type="hidden" name="action" value="disable">
-                    <button type="submit" class="btn-danger btn-sm"><%= msgs.get("myAccounts.disable") %></button>
-                <% } else { %>
-                    <input type="hidden" name="action" value="enable">
-                    <button type="submit" class="btn-sm"><%= msgs.get("myAccounts.enable") %></button>
-                <% } %>
             </form>
         </div>
     <% } %>

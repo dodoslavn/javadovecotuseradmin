@@ -18,7 +18,11 @@
 
     Locale resolvedLocale = (Locale) request.getAttribute("resolvedLocale");
     String currentLang = resolvedLocale != null ? resolvedLocale.getLanguage() : "en";
-    String basePath = request.getRequestURI();
+    // getRequestURI() reflects the forward *target* (e.g. /WEB-INF/jsp/my_accounts.jsp) when
+    // called from a JSP reached via RequestDispatcher.forward() — which is every page in this
+    // app. The original client-facing URL survives as this standard forward attribute instead.
+    String forwardUri = (String) request.getAttribute("jakarta.servlet.forward.request_uri");
+    String basePath = forwardUri != null ? forwardUri : request.getRequestURI();
 %>
 <footer>
     <div class="footer-inner">
