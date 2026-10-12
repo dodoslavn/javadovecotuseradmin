@@ -4,6 +4,7 @@ import eu.fordo.mailadmin.dao.DovecotAccountDao;
 import eu.fordo.mailadmin.model.DovecotAccount;
 import eu.fordo.mailadmin.service.AuditService;
 import eu.fordo.mailadmin.service.PasswordService;
+import eu.fordo.mailadmin.service.RabbitMqPublisher;
 import eu.fordo.mailadmin.service.SentryReporter;
 import eu.fordo.mailadmin.service.SessionUtil;
 import jakarta.servlet.ServletException;
@@ -57,14 +58,17 @@ public class MyAccountsServlet extends HttpServlet {
             if ("disable".equals(action)) {
                 dovecotAccountDao.setStatus(dovecotAccountId, "disabled");
                 auditService.record(req, "dovecot_account_disabled", "dovecot_account", dovecotAccountId, "self-service, username=" + username);
+                RabbitMqPublisher.publishIfAutoSyncEnabled("auto: disabled " + username);
             } else if ("enable".equals(action)) {
                 dovecotAccountDao.setStatus(dovecotAccountId, "active");
                 auditService.record(req, "dovecot_account_enabled", "dovecot_account", dovecotAccountId, "self-service, username=" + username);
+                RabbitMqPublisher.publishIfAutoSyncEnabled("auto: enabled " + username);
             } else {
                 String newPassword = req.getParameter("newPassword");
                 String hash = passwordService.hashDovecotPassword(newPassword);
                 dovecotAccountDao.updatePasswordHash(dovecotAccountId, hash);
                 auditService.record(req, "dovecot_account_password_changed", "dovecot_account", dovecotAccountId, "self-service, username=" + username);
+                RabbitMqPublisher.publishIfAutoSyncEnabled("auto: password changed for " + username);
             }
         } catch (SQLException e) {
             SentryReporter.captureException(e);

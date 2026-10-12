@@ -7,6 +7,7 @@ import eu.fordo.mailadmin.model.DovecotAccount;
 import eu.fordo.mailadmin.model.WebAccount;
 import eu.fordo.mailadmin.service.AuditService;
 import eu.fordo.mailadmin.service.PasswordService;
+import eu.fordo.mailadmin.service.RabbitMqPublisher;
 import eu.fordo.mailadmin.service.SentryReporter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -97,6 +98,7 @@ public class DovecotAccountServlet extends HttpServlet {
         String hash = passwordService.hashDovecotPassword(password);
         long id = dovecotAccountDao.create(username, hash);
         auditService.record(req, "dovecot_account_created", "dovecot_account", id, "username=" + username);
+        RabbitMqPublisher.publishIfAutoSyncEnabled("auto: created " + username);
     }
 
     private void setStatus(HttpServletRequest req, String status) throws SQLException {
@@ -105,6 +107,7 @@ public class DovecotAccountServlet extends HttpServlet {
         dovecotAccountDao.setStatus(id, status);
         auditService.record(req, "dovecot_account_" + ("disabled".equals(status) ? "disabled" : "enabled"),
                 "dovecot_account", id, "username=" + username);
+        RabbitMqPublisher.publishIfAutoSyncEnabled("auto: " + status + " " + username);
     }
 
     private void delete(HttpServletRequest req) throws SQLException {
@@ -112,6 +115,7 @@ public class DovecotAccountServlet extends HttpServlet {
         String username = dovecotAccountDao.findById(id).map(DovecotAccount::getUsername).orElse("#" + id);
         dovecotAccountDao.delete(id); // also drops any pairing row via ON DELETE CASCADE
         auditService.record(req, "dovecot_account_deleted", "dovecot_account", id, "username=" + username);
+        RabbitMqPublisher.publishIfAutoSyncEnabled("auto: deleted " + username);
     }
 
     private void pair(HttpServletRequest req) throws SQLException {

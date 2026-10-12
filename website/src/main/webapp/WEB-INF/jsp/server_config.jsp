@@ -80,6 +80,14 @@
     <div class="section">
         <h3><%= msgs.get("serverConfig.sync") %></h3>
         <p class="muted"><%= msgs.get("serverConfig.sync.hint") %></p>
+        <form method="post" action="${pageContext.request.contextPath}/admin/server-config" class="checkbox-row">
+            <input type="hidden" name="action" value="autosync">
+            <input type="checkbox" id="autosync-enabled" name="enabled" value="true"
+                   <%= ((Boolean) request.getAttribute("autoSyncEnabled")) ? "checked" : "" %>
+                   onchange="this.form.submit()">
+            <label for="autosync-enabled"><%= msgs.get("serverConfig.sync.autoSync") %></label>
+        </form>
+        <p class="muted"><%= msgs.get("serverConfig.sync.autoSync.hint") %></p>
         <%
             SyncStatus syncStatus = (SyncStatus) request.getAttribute("syncStatus");
             String forceSyncResult = (String) request.getAttribute("forceSyncResult");

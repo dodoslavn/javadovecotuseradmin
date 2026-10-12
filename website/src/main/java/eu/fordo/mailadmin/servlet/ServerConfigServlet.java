@@ -26,9 +26,12 @@ import java.util.Map;
  * /etc/mailadmin/config.properties (not a DB table — see AppConfig) via AppConfig.update(),
  * which rewrites only the matching lines and leaves everything else in the file untouched.
  *
- * Also shows the last report from the (deferred, not-yet-built) sync agent, delivered via
- * RabbitMQ — see SyncStatusRabbitMqConsumer — reusing these same rabbitmq.* credentials
- * rather than a separate auth mechanism.
+ * Also shows the last report from the sync agent (agent/sync-agent.pl, runs on the mail
+ * server), delivered via RabbitMQ — see SyncStatusRabbitMqConsumer — reusing these same
+ * rabbitmq.* credentials rather than a separate auth mechanism. The "Auto-sync" toggle here
+ * controls whether mail-account changes publish the "something changed" signal automatically
+ * (RabbitMqPublisher.publishIfAutoSyncEnabled(), called from DovecotAccountServlet and
+ * MyAccountsServlet) or only when "Force sync now" is clicked.
  */
 @WebServlet("/admin/server-config")
 public class ServerConfigServlet extends HttpServlet {
@@ -54,6 +57,7 @@ public class ServerConfigServlet extends HttpServlet {
 
         req.setAttribute("sentryDsn", AppConfig.get("sentry.dsn", ""));
         req.setAttribute("rmqConnected", SyncStatusRabbitMqConsumer.isConnected());
+        req.setAttribute("autoSyncEnabled", "true".equals(AppConfig.get("sync.autosync", "false")));
 
         try {
             req.setAttribute("syncStatus", syncStatusDao.get());
@@ -76,6 +80,10 @@ public class ServerConfigServlet extends HttpServlet {
             forceSync(req, resp);
             return;
         }
+        if ("autosync".equals(action)) {
+            updateAutoSync(req, resp);
+            return;
+        }
         updateRabbitMq(req, resp);
     }
 
@@ -90,6 +98,18 @@ public class ServerConfigServlet extends HttpServlet {
             req.setAttribute("forceSyncResult", "error");
         }
         doGet(req, resp); // forward, not redirect, so the one-time result message survives
+    }
+
+    private void updateAutoSync(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        boolean enabled = "true".equals(req.getParameter("enabled"));
+        try {
+            AppConfig.update(Map.of("sync.autosync", String.valueOf(enabled)));
+            auditService.record(req, "sync_autosync_updated", "server_config", null, enabled ? "enabled" : "disabled");
+        } catch (Exception e) {
+            SentryReporter.captureException(e);
+            throw new ServletException(e);
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin/server-config");
     }
 
     private void updateRabbitMq(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

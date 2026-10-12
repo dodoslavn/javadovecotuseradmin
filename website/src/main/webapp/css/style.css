@@ -206,6 +206,13 @@ tr:last-child td { border-bottom: none; }
 /* ── Forms ───────────────────────────────────────── */
 .form-grid { display: flex; flex-direction: column; gap: .75rem; max-width: 420px; }
 label { display: flex; flex-direction: column; gap: .3rem; font-weight: 500; }
+/* A standalone checkbox + its label on one line (e.g. the Auto-sync toggle) — the general
+   label rule above stacks a label's contents vertically, which only makes sense when the
+   label wraps its own input (the usual pattern elsewhere in this file); here the label is
+   a separate element linked by for=, not a wrapper, so that rule doesn't apply to it. */
+.checkbox-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+.checkbox-row input[type=checkbox] { width: auto; margin: 0; }
+.checkbox-row label { display: inline; font-weight: 500; cursor: pointer; }
 label small { font-weight: 400; color: var(--muted); }
 input[type=text],
 input[type=password],
