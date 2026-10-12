@@ -206,6 +206,11 @@ tr:last-child td { border-bottom: none; }
 /* ── Forms ───────────────────────────────────────── */
 .form-grid { display: flex; flex-direction: column; gap: .75rem; max-width: 420px; }
 label { display: flex; flex-direction: column; gap: .3rem; font-weight: 500; }
+/* Label text and its input on one row instead of stacked — for short single-field forms
+   (e.g. My account's password field) where a narrow box with a label line, then a full-width
+   input line below it, then a button, wastes the box's own width for no reason. */
+label.field-row { flex-direction: row; align-items: center; gap: .75rem; }
+label.field-row input { width: auto; flex: 1 1 auto; min-width: 0; }
 /* A standalone checkbox + its label on one line (e.g. the Auto-sync toggle) — the general
    label rule above stacks a label's contents vertically, which only makes sense when the
    label wraps its own input (the usual pattern elsewhere in this file); here the label is

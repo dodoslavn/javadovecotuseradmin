@@ -21,7 +21,7 @@
     <div class="section">
         <p class="muted"><%= msgs.get("account.username") %>: <strong>${sessionScope.webAccountUsername}</strong></p>
         <form method="post" action="${pageContext.request.contextPath}/account" class="form-grid">
-            <label><%= msgs.get("account.newPassword") %>
+            <label class="field-row"><%= msgs.get("account.newPassword") %>
                 <input type="password" name="newPassword" minlength="8" required></label>
             <button type="submit"><%= msgs.get("account.changePassword") %></button>
         </form>
