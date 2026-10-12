@@ -101,9 +101,10 @@ public class DovecotAccountServlet extends HttpServlet {
 
     private void setStatus(HttpServletRequest req, String status) throws SQLException {
         long id = Long.parseLong(req.getParameter("id"));
+        String username = dovecotAccountDao.findById(id).map(DovecotAccount::getUsername).orElse("#" + id);
         dovecotAccountDao.setStatus(id, status);
         auditService.record(req, "dovecot_account_" + ("disabled".equals(status) ? "disabled" : "enabled"),
-                "dovecot_account", id, null);
+                "dovecot_account", id, "username=" + username);
     }
 
     private void delete(HttpServletRequest req) throws SQLException {

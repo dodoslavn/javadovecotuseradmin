@@ -102,8 +102,9 @@ public class WebAccountServlet extends HttpServlet {
 
     private void setEnabled(HttpServletRequest req, boolean enabled) throws SQLException {
         long id = Long.parseLong(req.getParameter("id"));
+        String username = webAccountDao.findById(id).map(WebAccount::getUsername).orElse("#" + id);
         webAccountDao.setEnabled(id, enabled);
-        auditService.record(req, enabled ? "web_account_enabled" : "web_account_disabled", "web_account", id, null);
+        auditService.record(req, enabled ? "web_account_enabled" : "web_account_disabled", "web_account", id, "username=" + username);
     }
 
     private void resetPassword(HttpServletRequest req) throws SQLException {

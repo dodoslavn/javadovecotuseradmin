@@ -53,17 +53,18 @@ public class MyAccountsServlet extends HttpServlet {
                 resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Not your account");
                 return;
             }
+            String username = dovecotAccountDao.findById(dovecotAccountId).map(DovecotAccount::getUsername).orElse("#" + dovecotAccountId);
             if ("disable".equals(action)) {
                 dovecotAccountDao.setStatus(dovecotAccountId, "disabled");
-                auditService.record(req, "dovecot_account_disabled", "dovecot_account", dovecotAccountId, "self-service");
+                auditService.record(req, "dovecot_account_disabled", "dovecot_account", dovecotAccountId, "self-service, username=" + username);
             } else if ("enable".equals(action)) {
                 dovecotAccountDao.setStatus(dovecotAccountId, "active");
-                auditService.record(req, "dovecot_account_enabled", "dovecot_account", dovecotAccountId, "self-service");
+                auditService.record(req, "dovecot_account_enabled", "dovecot_account", dovecotAccountId, "self-service, username=" + username);
             } else {
                 String newPassword = req.getParameter("newPassword");
                 String hash = passwordService.hashDovecotPassword(newPassword);
                 dovecotAccountDao.updatePasswordHash(dovecotAccountId, hash);
-                auditService.record(req, "dovecot_account_password_changed", "dovecot_account", dovecotAccountId, "self-service");
+                auditService.record(req, "dovecot_account_password_changed", "dovecot_account", dovecotAccountId, "self-service, username=" + username);
             }
         } catch (SQLException e) {
             SentryReporter.captureException(e);
