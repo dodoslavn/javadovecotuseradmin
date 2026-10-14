@@ -30,40 +30,37 @@
                 Long pairedWebAccountId = pairings.get(a.getId());
         %>
         <div class="account-card<%= active ? "" : " row-disabled" %>">
-            <div class="account-card-main">
-                <div class="account-card-id">
-                    <span><%= a.getUsername() %></span>
-                    <span class="badge <%= active ? "badge-ok" : "badge-off" %>"><%= a.getStatus() %></span>
-                </div>
-                <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
-                    <input type="hidden" name="action" value="pair">
-                    <input type="hidden" name="dovecotAccountId" value="<%= a.getId() %>">
-                    <select name="webAccountId" onchange="this.form.submit()">
+            <form id="ma-delete-<%= a.getId() %>" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts"
+                  onsubmit="return confirm('<%= msgs.get("mailAccounts.confirm.delete") %>')">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="id" value="<%= a.getId() %>">
+            </form>
+            <form method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts" class="form-grid">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="id" value="<%= a.getId() %>">
+
+                <label><%= msgs.get("mailAccounts.field.email") %>
+                    <input type="text" value="<%= a.getUsername() %>" readonly></label>
+
+                <label><%= msgs.get("mailAccounts.field.managedBy") %>
+                    <select name="webAccountId">
                         <option value=""><%= msgs.get("mailAccounts.pairedWith.none") %></option>
                         <% for (WebAccount w : webAccounts) { %>
                             <option value="<%= w.getId() %>" <%= w.getId() == (pairedWebAccountId == null ? -1 : pairedWebAccountId) ? "selected" : "" %>><%= w.getUsername() %></option>
                         <% } %>
-                    </select>
-                </form>
-            </div>
-            <div class="account-card-actions">
-                <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts">
-                    <input type="hidden" name="id" value="<%= a.getId() %>">
-                    <% if (active) { %>
-                        <input type="hidden" name="action" value="disable">
-                        <button type="submit" class="btn-sm btn-danger"><%= msgs.get("mailAccounts.action.disable") %></button>
-                    <% } else { %>
-                        <input type="hidden" name="action" value="enable">
-                        <button type="submit" class="btn-sm"><%= msgs.get("mailAccounts.action.enable") %></button>
-                    <% } %>
-                </form>
-                <form class="inline-form" method="post" action="${pageContext.request.contextPath}/admin/dovecot-accounts"
-                      onsubmit="return confirm('<%= msgs.get("mailAccounts.confirm.delete") %>')">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" value="<%= a.getId() %>">
-                    <button type="submit" class="btn-sm btn-danger"><%= msgs.get("mailAccounts.action.delete") %></button>
-                </form>
-            </div>
+                    </select></label>
+
+                <div class="account-card-footer">
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="ma-active-<%= a.getId() %>" name="enabled" value="true" <%= active ? "checked" : "" %>>
+                        <label for="ma-active-<%= a.getId() %>"><%= msgs.get("mailAccounts.field.active") %></label>
+                    </div>
+                    <div class="card-footer-actions">
+                        <button type="submit"><%= msgs.get("mailAccounts.action.save") %></button>
+                        <button type="submit" form="ma-delete-<%= a.getId() %>" class="btn-danger"><%= msgs.get("mailAccounts.action.delete") %></button>
+                    </div>
+                </div>
+            </form>
         </div>
         <% } %>
     </div>

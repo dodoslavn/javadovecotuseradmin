@@ -67,12 +67,8 @@ public class DovecotAccountServlet extends HttpServlet {
                     req.getRequestDispatcher("/WEB-INF/jsp/dovecot_account_new.jsp").forward(req, resp);
                     return;
                 }
-            } else if ("disable".equals(action)) {
-                setStatus(req, "disabled");
-            } else if ("enable".equals(action)) {
-                setStatus(req, "active");
-            } else if ("pair".equals(action)) {
-                pair(req);
+            } else if ("update".equals(action)) {
+                update(req);
             } else if ("delete".equals(action)) {
                 delete(req);
             }
@@ -120,13 +116,38 @@ public class DovecotAccountServlet extends HttpServlet {
         }
     }
 
-    private void setStatus(HttpServletRequest req, String status) throws SQLException {
+    /**
+     * One card, one Save: pairing ("Managed by") and active status are submitted together.
+     * Each change is applied and audited only if it actually changed, so saving a card with
+     * nothing touched is a no-op with no spurious audit entries. The mailbox address itself
+     * isn't editable here (there's no rename for a Dovecot account), so it's shown read-only.
+     */
+    private void update(HttpServletRequest req) throws SQLException {
         long id = Long.parseLong(req.getParameter("id"));
-        String username = dovecotAccountDao.findById(id).map(DovecotAccount::getUsername).orElse("#" + id);
-        dovecotAccountDao.setStatus(id, status);
-        auditService.record(req, "dovecot_account_" + ("disabled".equals(status) ? "disabled" : "enabled"),
-                "dovecot_account", id, "username=" + username);
-        RabbitMqPublisher.publishIfAutoSyncEnabled("auto: " + status + " " + username);
+        DovecotAccount account = dovecotAccountDao.findById(id).orElse(null);
+        if (account == null) {
+            return; // deleted out from under us — the redirect just re-renders the current list
+        }
+        String username = account.getUsername();
+
+        String webAccountIdParam = req.getParameter("webAccountId");
+        Long webAccountId = (webAccountIdParam == null || webAccountIdParam.isBlank()) ? null : Long.parseLong(webAccountIdParam);
+        Long currentPair = linkDao.findPairings().get(id);
+        if (!java.util.Objects.equals(currentPair, webAccountId)) {
+            linkDao.setPairing(id, webAccountId);
+            auditService.record(req, webAccountId == null ? "link_removed" : "link_created", "dovecot_account", id,
+                    "webAccountId=" + webAccountId);
+        }
+
+        boolean enabled = "true".equals(req.getParameter("enabled"));
+        boolean wasActive = "active".equals(account.getStatus());
+        if (wasActive != enabled) {
+            String status = enabled ? "active" : "disabled";
+            dovecotAccountDao.setStatus(id, status);
+            auditService.record(req, enabled ? "dovecot_account_enabled" : "dovecot_account_disabled",
+                    "dovecot_account", id, "username=" + username);
+            RabbitMqPublisher.publishIfAutoSyncEnabled("auto: " + status + " " + username);
+        }
     }
 
     private void delete(HttpServletRequest req) throws SQLException {
@@ -135,15 +156,5 @@ public class DovecotAccountServlet extends HttpServlet {
         dovecotAccountDao.delete(id); // also drops any pairing row via ON DELETE CASCADE
         auditService.record(req, "dovecot_account_deleted", "dovecot_account", id, "username=" + username);
         RabbitMqPublisher.publishIfAutoSyncEnabled("auto: deleted " + username);
-    }
-
-    private void pair(HttpServletRequest req) throws SQLException {
-        long dovecotAccountId = Long.parseLong(req.getParameter("dovecotAccountId"));
-        String webAccountIdParam = req.getParameter("webAccountId");
-        Long webAccountId = (webAccountIdParam == null || webAccountIdParam.isBlank()) ? null : Long.parseLong(webAccountIdParam);
-
-        linkDao.setPairing(dovecotAccountId, webAccountId);
-        auditService.record(req, webAccountId == null ? "link_removed" : "link_created", "dovecot_account", dovecotAccountId,
-                "webAccountId=" + webAccountId);
     }
 }

@@ -238,7 +238,8 @@ tr:last-child td { border-bottom: none; }
 .account-card-main { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
 .account-card-id { display: flex; align-items: center; gap: .6rem; min-width: 0; }
 .account-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding-top: .5rem; border-top: 1px solid var(--border); }
-.account-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.account-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.card-footer-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 /* Same overflow problem a plain table had — an unconstrained input[type=text/password]
    defaults to ~20ch wide, which looks bulky stacked inline with a select + badges + a
    couple of buttons in one card row. */
