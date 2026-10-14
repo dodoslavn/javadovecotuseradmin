@@ -170,8 +170,11 @@ h2 + .page-intro, .page-header + .page-intro { margin-top: -1rem; }
 .setting { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: .3rem 1.25rem; align-items: center; padding: .8rem 0; border-top: 1px solid var(--border); }
 .setting:first-of-type { border-top: none; padding-top: .25rem; }
 .setting-label { font-weight: 600; font-size: 13px; color: var(--text); }
-.setting-label label { font-weight: 600; }
+/* Override the global label{display:flex;flex-direction:column} so a label and its adjacent
+   help-tip "?" sit on the same line inside a setting row. */
+.setting-label label { display: inline; font-weight: 600; }
 .setting-label .muted-note { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: .2rem; line-height: 1.5; }
+.setting-label .inline-note { font-weight: 400; font-size: 12px; color: var(--muted); margin-left: .4rem; }
 .setting-control { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; min-width: 0; }
 .setting-control input[type=text], .setting-control input[type=password], .setting-control input[type=number] { width: 100%; max-width: 340px; }
 .setting-control--wide input[type=text] { max-width: none; }
@@ -179,6 +182,17 @@ h2 + .page-intro, .page-header + .page-intro { margin-top: -1rem; }
 .setting--top { align-items: start; }
 
 .config-actions { margin-top: 1.25rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* Small "?" marker that reveals its explanation as a native hover/focus tooltip (title attr),
+   instead of showing the full help sentence inline. */
+.help-tip {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; margin-left: .4rem;
+    border-radius: 50%; background: var(--border); color: var(--muted);
+    font-size: 11px; font-weight: 700; line-height: 1; cursor: help; user-select: none;
+    vertical-align: middle;
+}
+.help-tip:hover, .help-tip:focus { background: var(--primary); color: #fff; outline: none; }
 
 @media (max-width: 640px) {
     .config-page .section { padding: 1rem; }

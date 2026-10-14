@@ -54,6 +54,8 @@ public class ServerConfigServlet extends HttpServlet {
         req.setAttribute("rmqUsername", AppConfig.get("rabbitmq.username", ""));
         req.setAttribute("rmqPasswordSet", !AppConfig.get("rabbitmq.password", "").isBlank());
         req.setAttribute("rmqExchange", AppConfig.get("rabbitmq.exchange", ""));
+        req.setAttribute("rmqRoutingKey", AppConfig.get("rabbitmq.routingKey", ""));
+        req.setAttribute("rmqQueue", AppConfig.get("rabbitmq.queue", ""));
 
         req.setAttribute("sentryDsn", AppConfig.get("sentry.dsn", ""));
         req.setAttribute("rmqConnected", SyncStatusRabbitMqConsumer.isConnected());
@@ -119,6 +121,8 @@ public class ServerConfigServlet extends HttpServlet {
         String username = req.getParameter("username");
         String password = req.getParameter("password"); // blank = keep the existing password unchanged
         String exchange = req.getParameter("exchange");
+        String routingKey = req.getParameter("routingKey");
+        String queue = req.getParameter("queue");
 
         Map<String, String> updates = new LinkedHashMap<>();
         updates.put("rabbitmq.host", host == null ? "" : host);
@@ -126,6 +130,8 @@ public class ServerConfigServlet extends HttpServlet {
         updates.put("rabbitmq.vhost", vhost == null ? "" : vhost);
         updates.put("rabbitmq.username", username == null ? "" : username);
         updates.put("rabbitmq.exchange", exchange == null ? "" : exchange);
+        updates.put("rabbitmq.routingKey", routingKey == null ? "" : routingKey);
+        updates.put("rabbitmq.queue", queue == null ? "" : queue);
         if (password != null && !password.isBlank()) {
             updates.put("rabbitmq.password", password);
         }
@@ -134,7 +140,7 @@ public class ServerConfigServlet extends HttpServlet {
             AppConfig.update(updates);
             SyncStatusRabbitMqConsumer.restart(); // picks up new host/credentials/exchange immediately
             auditService.record(req, "rabbitmq_config_updated", "server_config", null,
-                    "host=" + host + " port=" + port + " vhost=" + vhost + " exchange=" + exchange
+                    "host=" + host + " port=" + port + " vhost=" + vhost + " exchange=" + exchange + " routingKey=" + routingKey + " queue=" + queue
                             + (password != null && !password.isBlank() ? " (password rotated)" : ""));
         } catch (Exception e) {
             SentryReporter.captureException(e);

@@ -15,13 +15,13 @@
 <main class="config-page">
     <h2><%= msgs.get("serverConfig.heading") %></h2>
     <p class="page-intro"><%= msgs.get("serverConfig.pageIntro") %></p>
-    <div class="flash flash-info">
-        <%= msgs.get("serverConfig.intro") %>
-        <code><%= (String) request.getAttribute("configFilePath") %></code>
-        <% if (!(Boolean) request.getAttribute("configFilePresent")) { %>
+    <% if (!(Boolean) request.getAttribute("configFilePresent")) { %>
+        <div class="flash flash-warning">
+            <%= msgs.get("serverConfig.intro") %>
+            <code><%= (String) request.getAttribute("configFilePath") %></code>
             — <strong><%= msgs.get("serverConfig.fileMissing") %></strong>
-        <% } %>
-    </div>
+        </div>
+    <% } %>
 
     <div class="section">
         <h3><%= msgs.get("serverConfig.mysql") %></h3>
@@ -71,12 +71,20 @@
             </div>
             <div class="setting">
                 <div class="setting-label"><label for="rmq-password"><%= msgs.get("rabbitmq.password") %></label>
-                    <span class="muted-note"><%= ((Boolean) request.getAttribute("rmqPasswordSet")) ? msgs.get("serverConfig.passwordSet") : msgs.get("serverConfig.passwordNotSet") %></span></div>
+                    <span class="inline-note"><%= ((Boolean) request.getAttribute("rmqPasswordSet")) ? msgs.get("serverConfig.passwordSet") : msgs.get("serverConfig.passwordNotSet") %></span></div>
                 <div class="setting-control"><input type="password" id="rmq-password" name="password" placeholder="<%= msgs.get("serverConfig.passwordBlankHint") %>"></div>
             </div>
             <div class="setting">
-                <div class="setting-label"><label for="rmq-exchange"><%= msgs.get("rabbitmq.exchange") %></label></div>
+                <div class="setting-label"><label for="rmq-exchange"><%= msgs.get("rabbitmq.exchange") %></label><span class="help-tip" tabindex="0" title="<%= msgs.get("rabbitmq.exchange.hint") %>">?</span></div>
                 <div class="setting-control"><input type="text" id="rmq-exchange" name="exchange" value="<%= request.getAttribute("rmqExchange") %>"></div>
+            </div>
+            <div class="setting">
+                <div class="setting-label"><label for="rmq-routingkey"><%= msgs.get("rabbitmq.routingKey") %></label><span class="help-tip" tabindex="0" title="<%= msgs.get("rabbitmq.routingKey.hint") %>">?</span></div>
+                <div class="setting-control"><input type="text" id="rmq-routingkey" name="routingKey" value="<%= request.getAttribute("rmqRoutingKey") %>" placeholder="account.changed"></div>
+            </div>
+            <div class="setting">
+                <div class="setting-label"><label for="rmq-queue"><%= msgs.get("rabbitmq.queue") %></label><span class="help-tip" tabindex="0" title="<%= msgs.get("rabbitmq.queue.hint") %>">?</span></div>
+                <div class="setting-control"><input type="text" id="rmq-queue" name="queue" value="<%= request.getAttribute("rmqQueue") %>" placeholder="mailadmin.sync-status"></div>
             </div>
             <div class="config-actions"><button type="submit"><%= msgs.get("serverConfig.save") %></button></div>
         </form>
@@ -84,11 +92,11 @@
 
     <div class="section">
         <h3><%= msgs.get("serverConfig.sentry") %></h3>
+        <p class="muted" style="margin-bottom:.5rem;"><%= msgs.get("serverConfig.sentry.hint") %></p>
         <form method="post" action="${pageContext.request.contextPath}/admin/server-config">
             <input type="hidden" name="action" value="sentry">
-            <div class="setting setting--top">
-                <div class="setting-label"><label for="sentry-dsn"><%= msgs.get("serverConfig.sentry.dsn") %></label>
-                    <span class="muted-note"><%= msgs.get("serverConfig.sentry.hint") %></span></div>
+            <div class="setting">
+                <div class="setting-label"><label for="sentry-dsn"><%= msgs.get("serverConfig.sentry.dsn") %></label></div>
                 <div class="setting-control setting-control--wide"><input type="text" id="sentry-dsn" name="dsn" value="<%= request.getAttribute("sentryDsn") %>" placeholder="https://...@...ingest.sentry.io/..."></div>
             </div>
             <div class="config-actions"><button type="submit"><%= msgs.get("serverConfig.save") %></button></div>
@@ -96,20 +104,28 @@
     </div>
 
     <div class="section">
-        <h3><%= msgs.get("serverConfig.sync") %></h3>
-        <p class="muted" style="margin-bottom:.5rem;"><%= msgs.get("serverConfig.sync.hint") %></p>
         <%
             SyncStatus syncStatus = (SyncStatus) request.getAttribute("syncStatus");
             String forceSyncResult = (String) request.getAttribute("forceSyncResult");
+            boolean syncReported = syncStatus != null && syncStatus.getStatus() != null;
+            boolean syncOk = syncReported && "ok".equals(syncStatus.getStatus());
         %>
+        <div class="section-head">
+            <h3><%= msgs.get("serverConfig.sync") %></h3>
+            <% if (syncReported) { %>
+                <span class="conn-status">
+                    <span class="badge <%= syncOk ? "badge-ok" : "badge-off" %>"><%= syncOk ? msgs.get("serverConfig.sync.status.ok") : msgs.get("serverConfig.sync.status.error") %></span>
+                </span>
+            <% } %>
+        </div>
+        <p class="muted" style="margin-bottom:.5rem;"><%= msgs.get("serverConfig.sync.hint") %></p>
         <% if ("success".equals(forceSyncResult)) { %>
             <div class="flash flash-success"><%= msgs.get("serverConfig.sync.forceSyncSuccess") %></div>
         <% } else if ("error".equals(forceSyncResult)) { %>
             <div class="flash flash-error"><%= msgs.get("serverConfig.sync.forceSyncError") %></div>
         <% } %>
-        <div class="setting setting--top">
-            <div class="setting-label"><label for="autosync-enabled"><%= msgs.get("serverConfig.sync.autoSync") %></label>
-                <span class="muted-note"><%= msgs.get("serverConfig.sync.autoSync.hint") %></span></div>
+        <div class="setting">
+            <div class="setting-label"><label for="autosync-enabled"><%= msgs.get("serverConfig.sync.autoSync") %></label><span class="help-tip" tabindex="0" title="<%= msgs.get("serverConfig.sync.autoSync.hint") %>">?</span></div>
             <div class="setting-control">
                 <form method="post" action="${pageContext.request.contextPath}/admin/server-config">
                     <input type="hidden" name="action" value="autosync">
@@ -131,16 +147,13 @@
         </div>
         <div class="setting">
             <div class="setting-label"><%= msgs.get("serverConfig.sync.lastSync") %></div>
-            <div class="setting-control">
+            <div class="setting-control"><span class="setting-value">
                 <% if (syncStatus != null && syncStatus.getLastSyncAt() != null) { %>
-                    <span class="setting-value"><%= DateFormatter.format(syncStatus.getLastSyncAt()) %></span>
-                    <span class="badge <%= "ok".equals(syncStatus.getStatus()) ? "badge-ok" : "badge-off" %>">
-                        <%= "ok".equals(syncStatus.getStatus()) ? msgs.get("serverConfig.sync.status.ok") : msgs.get("serverConfig.sync.status.error") %>
-                    </span>
+                    <%= DateFormatter.format(syncStatus.getLastSyncAt()) %>
                 <% } else { %>
-                    <span class="muted setting-value"><%= msgs.get("serverConfig.sync.never") %></span>
+                    <span class="muted"><%= msgs.get("serverConfig.sync.never") %></span>
                 <% } %>
-            </div>
+            </span></div>
         </div>
         <%-- Only shown on failure — the agent's own success detail (e.g. an account count)
              isn't something the website can verify independently, so it's not worth

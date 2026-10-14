@@ -30,7 +30,8 @@ import java.util.logging.Logger;
 public final class SyncStatusRabbitMqConsumer {
 
     private static final Logger LOG = Logger.getLogger(SyncStatusRabbitMqConsumer.class.getName());
-    private static final String QUEUE = "mailadmin.sync-status";
+    /** Default queue the sync agent's status reports are received on; overridable via rabbitmq.queue. */
+    private static final String DEFAULT_QUEUE = "mailadmin.sync-status";
     private static final String ROUTING_KEY = "sync.status";
     private static final long RETRY_DELAY_MS = 10_000;
 
@@ -109,12 +110,16 @@ public final class SyncStatusRabbitMqConsumer {
         Channel channel = connection.createChannel();
 
         String exchange = AppConfig.get("rabbitmq.exchange", "mailacct.events");
+        String queue = AppConfig.get("rabbitmq.queue", DEFAULT_QUEUE);
+        if (queue.isBlank()) {
+            queue = DEFAULT_QUEUE;
+        }
         channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC, true);
-        channel.queueDeclare(QUEUE, true, false, false, null);
-        channel.queueBind(QUEUE, exchange, ROUTING_KEY);
+        channel.queueDeclare(queue, true, false, false, null);
+        channel.queueBind(queue, exchange, ROUTING_KEY);
 
         connected = true;
-        LOG.info("RabbitMQ sync-status consumer connected (" + factory.getHost() + "), listening on " + QUEUE);
+        LOG.info("RabbitMQ sync-status consumer connected (" + factory.getHost() + "), listening on " + queue);
 
         SyncStatusDao syncStatusDao = new SyncStatusDao();
         DeliverCallback onMessage = (consumerTag, delivery) -> {
@@ -137,7 +142,7 @@ public final class SyncStatusRabbitMqConsumer {
                 channel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, true); // requeue, DB may just be down transiently
             }
         };
-        channel.basicConsume(QUEUE, false, onMessage, consumerTag -> { });
+        channel.basicConsume(queue, false, onMessage, consumerTag -> { });
 
         // Messages are handled asynchronously by amqp-client's own threads — this thread just
         // stays parked here as long as the connection is alive, so runLoop() doesn't think

@@ -21,7 +21,8 @@ import java.nio.charset.StandardCharsets;
  */
 public final class RabbitMqPublisher {
 
-    private static final String ROUTING_KEY = "account.changed";
+    /** Default routing key for the outbound "something changed" signal; overridable via rabbitmq.routingKey. */
+    private static final String DEFAULT_ROUTING_KEY = "account.changed";
 
     private RabbitMqPublisher() {}
 
@@ -53,9 +54,13 @@ public final class RabbitMqPublisher {
         try (Connection connection = factory.newConnection("tomcatdovecotuseradmin-publisher");
              Channel channel = connection.createChannel()) {
             String exchange = AppConfig.get("rabbitmq.exchange", "mailacct.events");
+            String routingKey = AppConfig.get("rabbitmq.routingKey", DEFAULT_ROUTING_KEY);
+            if (routingKey.isBlank()) {
+                routingKey = DEFAULT_ROUTING_KEY;
+            }
             channel.exchangeDeclare(exchange, BuiltinExchangeType.TOPIC, true);
             String body = (reason == null || reason.isBlank()) ? "changed" : reason;
-            channel.basicPublish(exchange, ROUTING_KEY, null, body.getBytes(StandardCharsets.UTF_8));
+            channel.basicPublish(exchange, routingKey, null, body.getBytes(StandardCharsets.UTF_8));
         }
 
         // Record separately from the try-with-resources above: the publish itself already
