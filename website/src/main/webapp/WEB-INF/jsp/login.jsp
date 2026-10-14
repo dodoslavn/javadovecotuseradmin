@@ -19,6 +19,7 @@
         </div>
         <div class="login-box">
             <h1><%= msgs.get("login.heading") %></h1>
+            <% if ("1".equals(request.getParameter("invited"))) { %><div class="flash flash-success"><%= msgs.get("login.invited") %></div><% } %>
             <% if (request.getAttribute("error") != null) { %><div class="flash flash-error"><%= msgs.get("login.error") %></div><% } %>
             <form method="post" action="${pageContext.request.contextPath}/login">
                 <label><%= msgs.get("login.username") %>

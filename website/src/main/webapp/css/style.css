@@ -134,6 +134,11 @@ h3 { font-size: 15px; margin-bottom: 1rem; color: var(--muted); text-transform: 
 /* ── Page header (heading + a primary action, e.g. "+ Add account") ── */
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .page-header h2 { margin-bottom: 0; }
+.page-header-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* A copyable read-only field (invite links) — full-width, selects all on click. */
+.copy-row { display: flex; }
+.copy-row input { width: 100%; font-family: monospace; font-size: 12px; background: #fff; }
 
 /* One or two sentences under the heading saying what this page is for. Pulls up against
    the heading's own margin-bottom (1.5rem) rather than stacking two large gaps. */
@@ -306,6 +311,8 @@ button, .btn {
 button:hover, .btn:hover { background: var(--primary-hover); }
 .btn-danger, button.btn-danger  { background: var(--danger); }
 .btn-warning, button.btn-warning { background: var(--warning); }
+.btn-secondary, a.btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover, a.btn-secondary:hover { background: var(--bg); }
 .btn-sm { padding: .3rem .7rem; font-size: 12px; }
 /* Used for per-row forms in table cells (rename, reset password, pairing, enable/disable).
    Always a flex row so an input/select and its button stay side by side — never the

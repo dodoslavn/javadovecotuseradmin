@@ -15,7 +15,10 @@
 <main>
     <div class="page-header">
         <h2><%= msgs.get("webAccounts.heading") %></h2>
-        <a class="btn" href="${pageContext.request.contextPath}/admin/web-accounts/new"><%= msgs.get("webAccounts.action.addNew") %></a>
+        <div class="page-header-actions">
+            <a class="btn btn-secondary" href="${pageContext.request.contextPath}/admin/web-accounts/invite"><%= msgs.get("invite.action.addNew") %></a>
+            <a class="btn" href="${pageContext.request.contextPath}/admin/web-accounts/new"><%= msgs.get("webAccounts.action.addNew") %></a>
+        </div>
     </div>
     <p class="page-intro"><%= msgs.get("webAccounts.intro") %></p>
     <% if (request.getAttribute("errorKey") != null) { %><div class="flash flash-error"><%= msgs.get((String) request.getAttribute("errorKey")) %></div><% } %>

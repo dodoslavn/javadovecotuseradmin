@@ -19,7 +19,7 @@ import java.sql.Statement;
 public final class SchemaInstaller {
 
     /** Bump this and add a case in runMigration() whenever the schema changes. */
-    public static final int CURRENT_VERSION = 3;
+    public static final int CURRENT_VERSION = 4;
 
     private static final String[] BASE_TABLES = {
             """
@@ -82,6 +82,21 @@ public final class SchemaInstaller {
                 updated_at            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 CONSTRAINT single_row CHECK (id = 1)
             ) ENGINE=InnoDB
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS web_account_invites (
+                id                        BIGINT PRIMARY KEY AUTO_INCREMENT,
+                token                     VARCHAR(64) NOT NULL UNIQUE,
+                role                      ENUM('ADMIN', 'USER') NOT NULL,
+                suggested_username        VARCHAR(100) NULL,
+                created_by_web_account_id BIGINT NULL,
+                created_at                TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                expires_at                TIMESTAMP NOT NULL,
+                used_at                   TIMESTAMP NULL,
+                used_web_account_id       BIGINT NULL,
+                FOREIGN KEY (created_by_web_account_id) REFERENCES web_accounts(id) ON DELETE SET NULL,
+                FOREIGN KEY (used_web_account_id) REFERENCES web_accounts(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB
             """
     };
 
@@ -117,6 +132,9 @@ public final class SchemaInstaller {
                 // CREATE TABLE IF NOT EXISTS — nothing further needed for an existing install.
                 case 2 -> { }
                 case 3 -> st.execute("ALTER TABLE sync_status ADD COLUMN last_request_sent_at TIMESTAMP NULL");
+                // web_account_invites is a brand-new table, already created above by BASE_TABLES's
+                // own CREATE TABLE IF NOT EXISTS — nothing further needed for an existing install.
+                case 4 -> { }
                 default -> throw new IllegalStateException("No migration defined for schema version " + toVersion);
             }
         }

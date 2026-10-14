@@ -104,6 +104,15 @@ public class WebAccountDao {
         }
     }
 
+    public void delete(long id) throws SQLException {
+        String sql = "DELETE FROM web_accounts WHERE id = ?";
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            ps.executeUpdate();
+        }
+    }
+
     private WebAccount map(ResultSet rs) throws SQLException {
         WebAccount a = new WebAccount();
         a.setId(rs.getLong("id"));

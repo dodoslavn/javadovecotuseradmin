@@ -19,13 +19,15 @@ public class AuthFilter extends HttpFilter {
 
     private static final String LOGIN_PATH = "/login";
     private static final String SETUP_PATH = "/setup";
+    private static final String INVITE_PATH = "/invite"; // public: accept an invite to create a web account
 
     @Override
     protected void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain)
             throws IOException, ServletException {
         String path = req.getServletPath();
 
-        if (path.equals(LOGIN_PATH) || path.equals(SETUP_PATH) || path.startsWith("/css/") || path.startsWith("/assets/")) {
+        if (path.equals(LOGIN_PATH) || path.equals(SETUP_PATH) || path.equals(INVITE_PATH)
+                || path.startsWith("/css/") || path.startsWith("/assets/")) {
             chain.doFilter(req, resp);
             return;
         }

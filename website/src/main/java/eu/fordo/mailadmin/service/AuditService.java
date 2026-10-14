@@ -14,4 +14,9 @@ public class AuditService {
         Long actorId = SessionUtil.currentWebAccountId(req);
         auditLogDao.record(actorId, action, targetType, targetId, detail);
     }
+
+    /** For actions taken outside a logged-in session (e.g. an invitee self-registering): the actor is passed explicitly. */
+    public void recordActor(Long actorId, String action, String targetType, Long targetId, String detail) throws SQLException {
+        auditLogDao.record(actorId, action, targetType, targetId, detail);
+    }
 }

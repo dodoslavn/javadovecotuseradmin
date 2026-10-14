@@ -58,7 +58,25 @@ CREATE TABLE schema_version (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT single_row CHECK (id = 1)
 ) ENGINE=InnoDB;
-INSERT INTO schema_version (id, version) VALUES (1, 3);
+INSERT INTO schema_version (id, version) VALUES (1, 4);
+
+-- Single-use, time-limited invite links. An admin generates one; whoever opens
+-- /invite?token=... chooses their own username + password and a web account is created with
+-- the preset role. token is 256 bits of URL-safe entropy; used_at (single-use) and expires_at
+-- are both checked on accept. See InviteDao / InviteServlet / InviteAdminServlet.
+CREATE TABLE web_account_invites (
+    id                        BIGINT PRIMARY KEY AUTO_INCREMENT,
+    token                     VARCHAR(64) NOT NULL UNIQUE,
+    role                      ENUM('ADMIN', 'USER') NOT NULL,
+    suggested_username        VARCHAR(100) NULL,
+    created_by_web_account_id BIGINT NULL,
+    created_at                TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at                TIMESTAMP NOT NULL,
+    used_at                   TIMESTAMP NULL,
+    used_web_account_id       BIGINT NULL,
+    FOREIGN KEY (created_by_web_account_id) REFERENCES web_accounts(id) ON DELETE SET NULL,
+    FOREIGN KEY (used_web_account_id) REFERENCES web_accounts(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
 -- last_sync_at/status/detail: reported by the sync agent (agent/sync-agent.pl, on the mail
 -- server) over RabbitMQ after each run — see SyncStatusRabbitMqConsumer. Shown on the
