@@ -150,20 +150,41 @@ h2 + .page-intro, .page-header + .page-intro { margin-top: -1rem; }
    are excluded so the table isn't squeezed down to the form's width too. */
 .section:has(> form.form-grid):not(:has(.table-wrap)) { max-width: 480px; }
 
-/* Server configuration is several cards of mixed content (read-only tables + editable
-   forms). The shrink-wrap rule above is right for single-card pages (Create account, etc.)
-   but here it would make the form cards ~480px while the table cards stay full width, which
-   reads as ragged on a wide screen. Keep every card the full content width so their edges
-   line up; the forms inside stay a tidy left-aligned single column (their own 420px
-   max-width), which is the standard, uncluttered settings-page look. (An earlier attempt
-   flowed the fields into multiple columns to "fill" the width, but a field like the RabbitMQ
-   password — whose "(set)" badge makes its label taller than its neighbours' — threw the
-   row alignment off and read as messy; a plain single column is cleaner.)
-   The max-width override is written specific enough to beat the shrink-wrap rule above, whose
-   :has()/:not() arguments give it a high specificity — a plain ".config-page .section" would
-   lose and the form cards would stay capped at 480px. */
+/* ── Server configuration (settings) ──────────────────────────────────
+   A unified "setting row" system: every row — read-only value or editable input — is a
+   label on the left and its control/value on the right, so the whole page shares one rhythm
+   instead of mixing tables and full-width forms. The page is a tidy centered column (760px)
+   rather than the default 960px, so there's no wide dead space on a big screen; on phones
+   (≤640px) each row stacks the control under its label. */
+.config-page { max-width: 760px; }
+/* Override the shrink-wrap rule above — written specific enough to beat its :has()/:not()
+   specificity so the form cards aren't capped at 480px. */
 .config-page .section,
 .config-page .section:has(> form.form-grid):not(:has(.table-wrap)) { max-width: none; }
+.config-page .section { padding: 1.25rem 1.5rem; }
+
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.section-head h3 { margin-bottom: 0; }
+.section-head .conn-status { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: .4rem; }
+
+.setting { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: .3rem 1.25rem; align-items: center; padding: .8rem 0; border-top: 1px solid var(--border); }
+.setting:first-of-type { border-top: none; padding-top: .25rem; }
+.setting-label { font-weight: 600; font-size: 13px; color: var(--text); }
+.setting-label label { font-weight: 600; }
+.setting-label .muted-note { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: .2rem; line-height: 1.5; }
+.setting-control { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; min-width: 0; }
+.setting-control input[type=text], .setting-control input[type=password], .setting-control input[type=number] { width: 100%; max-width: 340px; }
+.setting-control--wide input[type=text] { max-width: none; }
+.setting-value { color: var(--text); font-size: 14px; word-break: break-word; }
+.setting--top { align-items: start; }
+
+.config-actions { margin-top: 1.25rem; display: flex; gap: .5rem; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+    .config-page .section { padding: 1rem; }
+    .setting { grid-template-columns: 1fr; gap: .4rem; align-items: start; }
+    .setting-control input[type=text], .setting-control input[type=password], .setting-control input[type=number] { max-width: 100%; }
+}
 
 /* ── Stats ───────────────────────────────────────── */
 .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
