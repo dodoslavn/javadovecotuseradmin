@@ -24,7 +24,7 @@
     <% } %>
 
     <div class="section">
-        <h3><%= msgs.get("serverConfig.mysql") %></h3>
+        <h3><%= msgs.get("serverConfig.database") %> <span class="muted">(<%= request.getAttribute("dbSystemName") %>)</span></h3>
         <div class="setting">
             <div class="setting-label"><%= msgs.get("serverConfig.dbUrl") %></div>
             <div class="setting-control"><span class="setting-value"><%= request.getAttribute("dbUrl") %></span></div>

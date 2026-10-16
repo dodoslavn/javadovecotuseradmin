@@ -1,4 +1,8 @@
--- Mail Account Admin Website — schema (MariaDB)
+-- Mail Account Admin Website — schema (MariaDB/MySQL reference).
+-- This file is a human-readable reference for the MySQL/MariaDB dialect. The app does NOT run it;
+-- SchemaInstaller.java creates and migrates the schema at runtime for whichever database system
+-- was chosen in the setup wizard (MariaDB, MySQL, or PostgreSQL) — see SchemaInstaller for the
+-- PostgreSQL dialect (IDENTITY, VARCHAR+CHECK instead of ENUM, updated_at triggers, etc.).
 CREATE DATABASE IF NOT EXISTS mailadmin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE mailadmin;
 

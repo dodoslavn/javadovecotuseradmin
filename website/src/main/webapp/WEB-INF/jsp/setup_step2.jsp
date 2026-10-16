@@ -23,6 +23,7 @@
         <p><%= msgs.get("setup.step2.formIntro") %></p>
         <form method="post" action="${pageContext.request.contextPath}/setup">
             <input type="hidden" name="action" value="install">
+            <input type="hidden" name="dbSystem" value="<%= request.getAttribute("dbSystem") %>">
             <input type="hidden" name="dbName" value="<%= request.getAttribute("dbName") %>">
             <label><%= msgs.get("setup.step2.host") %>
                 <input type="text" name="host" value="<%= request.getAttribute("host") %>" required></label>

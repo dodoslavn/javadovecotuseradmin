@@ -12,9 +12,13 @@ mkdir -p "$LIB_DIR"
 # Apt-provided jars: build.sh's classpath globs *.jar already sitting in WEB-INF/lib, it
 # doesn't copy these itself — they need to already be here before the first build.
 cp -n /usr/share/java/mariadb-java-client.jar "$LIB_DIR/" 2>/dev/null || true
+cp -n /usr/share/java/postgresql.jar "$LIB_DIR/" 2>/dev/null || true
 cp -n /usr/share/java/jbcrypt.jar "$LIB_DIR/" 2>/dev/null || true
 cp -n /usr/share/java/amqp-client.jar "$LIB_DIR/" 2>/dev/null || true
 [ -f "${LIB_DIR}/mariadb-java-client.jar" ] || error "mariadb-java-client.jar missing — did step 07 run?"
+# postgresql.jar is only needed for the optional PostgreSQL backend; the MariaDB driver covers
+# MariaDB and MySQL. Warn (don't fail) if it's absent so MariaDB/MySQL installs still proceed.
+[ -f "${LIB_DIR}/postgresql.jar" ] || info "postgresql.jar not present — PostgreSQL backend will be unavailable (fine for MariaDB/MySQL)."
 [ -f "${LIB_DIR}/jbcrypt.jar" ] || error "jbcrypt.jar missing — did step 07 run?"
 [ -f "${LIB_DIR}/amqp-client.jar" ] || error "amqp-client.jar missing — did step 07 run?"
 # Deliberately NOT copying /usr/share/java/slf4j-api*.jar here — amqp-client depends on it

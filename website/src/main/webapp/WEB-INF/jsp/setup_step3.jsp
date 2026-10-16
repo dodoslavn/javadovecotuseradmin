@@ -19,6 +19,7 @@
         <div class="flash flash-success"><%= msgs.get("setup.step3.intro") %></div>
         <form method="post" action="${pageContext.request.contextPath}/setup">
             <input type="hidden" name="action" value="createAdmin">
+            <input type="hidden" name="dbSystem" value="<%= request.getAttribute("dbSystem") %>">
             <input type="hidden" name="dbName" value="<%= request.getAttribute("dbName") %>">
             <input type="hidden" name="host" value="<%= request.getAttribute("host") %>">
             <input type="hidden" name="port" value="<%= request.getAttribute("port") %>">

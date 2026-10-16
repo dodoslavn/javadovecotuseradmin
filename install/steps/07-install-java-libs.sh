@@ -11,9 +11,12 @@ info "Installing apt-packaged Java libraries..."
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
     libjakarta-servlet-api-java \
     libmariadb-java \
+    libpostgresql-jdbc-java \
     libjbcrypt-java \
     librabbitmq-client-java \
     || error "Failed to install Java libraries"
-log "Java libraries installed (servlet-api, mariadb-java, jbcrypt, rabbitmq-client)"
+# libpostgresql-jdbc-java is for the optional PostgreSQL backend; the MariaDB driver also serves
+# MySQL (jdbc:mariadb://). Both drivers are bundled so the chosen DB system just works — see DbSystem.
+log "Java libraries installed (servlet-api, mariadb-java, postgresql-jdbc, jbcrypt, rabbitmq-client)"
 
 complete_step

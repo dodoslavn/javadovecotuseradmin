@@ -22,6 +22,8 @@
             <label><%= msgs.get("setup.step1.dbSystem") %>
                 <select name="dbSystem">
                     <option value="mariadb">MariaDB</option>
+                    <option value="mysql">MySQL</option>
+                    <option value="postgresql">PostgreSQL</option>
                 </select>
             </label>
             <label><%= msgs.get("setup.step1.dbName") %>

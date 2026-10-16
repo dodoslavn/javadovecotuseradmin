@@ -4,6 +4,7 @@ import eu.fordo.mailadmin.dao.SyncStatusDao;
 import eu.fordo.mailadmin.model.SyncStatus;
 import eu.fordo.mailadmin.service.AppConfig;
 import eu.fordo.mailadmin.service.AuditService;
+import eu.fordo.mailadmin.service.DbSystem;
 import eu.fordo.mailadmin.service.RabbitMqPublisher;
 import eu.fordo.mailadmin.service.SentryReporter;
 import eu.fordo.mailadmin.service.SessionUtil;
@@ -44,7 +45,9 @@ public class ServerConfigServlet extends HttpServlet {
         req.setAttribute("configFilePath", AppConfig.configFilePath());
         req.setAttribute("configFilePresent", AppConfig.isConfigFilePresent());
 
-        req.setAttribute("dbUrl", AppConfig.get("db.url", ""));
+        String dbUrl = AppConfig.get("db.url", "");
+        req.setAttribute("dbUrl", dbUrl);
+        req.setAttribute("dbSystemName", DbSystem.displayNameForUrl(dbUrl));
         req.setAttribute("dbUser", AppConfig.get("db.user", ""));
         req.setAttribute("dbPasswordSet", !AppConfig.get("db.password", "").isBlank());
 
