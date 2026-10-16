@@ -1,6 +1,21 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="eu.fordo.mailadmin.service.Messages" %>
+<%@ page import="java.util.LinkedHashMap, java.util.Map" %>
 <% Messages msgs = Messages.of(request); %>
+<%
+    // Native display name per language code — same set/order as footer.jspf.
+    Map<String, String> accountLanguageNames = new LinkedHashMap<>();
+    accountLanguageNames.put("en", "English");
+    accountLanguageNames.put("cs", "Čeština");
+    accountLanguageNames.put("de", "Deutsch");
+    accountLanguageNames.put("es", "Español");
+    accountLanguageNames.put("hu", "Magyar");
+    accountLanguageNames.put("it", "Italiano");
+    accountLanguageNames.put("pl", "Polski");
+    accountLanguageNames.put("sk", "Slovenčina");
+    accountLanguageNames.put("uk", "Українська");
+    String profileLanguage = (String) request.getAttribute("profileLanguage");
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,6 +32,7 @@
     <p class="page-intro"><%= msgs.get("account.intro") %></p>
     <% if (request.getAttribute("errorKey") != null) { %><div class="flash flash-error"><%= msgs.get((String) request.getAttribute("errorKey")) %></div><% } %>
     <% if (request.getAttribute("success") != null) { %><div class="flash flash-success"><%= msgs.get("account.success") %></div><% } %>
+    <% if (request.getAttribute("languageSuccess") != null) { %><div class="flash flash-success"><%= msgs.get("account.language.success") %></div><% } %>
 
     <div class="section">
         <p class="muted"><%= msgs.get("account.username") %>: <strong>${sessionScope.webAccountUsername}</strong></p>
@@ -24,6 +40,24 @@
             <label class="field-row"><%= msgs.get("account.newPassword") %>
                 <input type="password" name="newPassword" minlength="8" required></label>
             <button type="submit"><%= msgs.get("account.changePassword") %></button>
+        </form>
+    </div>
+
+    <div class="section">
+        <form method="post" action="${pageContext.request.contextPath}/account" class="form-grid">
+            <input type="hidden" name="action" value="language">
+            <label class="field-row"><%= msgs.get("account.language") %>
+                <select name="language">
+                    <option value=""<%= profileLanguage == null ? " selected" : "" %>><%= msgs.get("account.language.auto") %></option>
+                    <%
+                        for (Map.Entry<String, String> e : accountLanguageNames.entrySet()) {
+                            String sel = e.getKey().equals(profileLanguage) ? " selected" : "";
+                    %>
+                        <option value="<%= e.getKey() %>"<%= sel %>><%= e.getValue() %></option>
+                    <% } %>
+                </select>
+            </label>
+            <button type="submit"><%= msgs.get("account.language.save") %></button>
         </form>
     </div>
 </main>

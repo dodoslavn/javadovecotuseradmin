@@ -19,7 +19,7 @@ import java.sql.Statement;
 public final class SchemaInstaller {
 
     /** Bump this and add a case in runMigration() whenever the schema changes. */
-    public static final int CURRENT_VERSION = 4;
+    public static final int CURRENT_VERSION = 5;
 
     private static final String[] BASE_TABLES = {
             """
@@ -29,6 +29,7 @@ public final class SchemaInstaller {
                 password_hash VARCHAR(255) NOT NULL,
                 role          ENUM('ADMIN', 'USER') NOT NULL,
                 enabled       BOOLEAN NOT NULL DEFAULT TRUE,
+                language      VARCHAR(8) NULL,
                 created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB
             """,
@@ -135,6 +136,8 @@ public final class SchemaInstaller {
                 // web_account_invites is a brand-new table, already created above by BASE_TABLES's
                 // own CREATE TABLE IF NOT EXISTS — nothing further needed for an existing install.
                 case 4 -> { }
+                // Per-account preferred UI language (null = follow browser/cookie). See LocaleFilter.
+                case 5 -> st.execute("ALTER TABLE web_accounts ADD COLUMN language VARCHAR(8) NULL");
                 default -> throw new IllegalStateException("No migration defined for schema version " + toVersion);
             }
         }

@@ -40,6 +40,9 @@ public class LoginServlet extends HttpServlet {
             if (account.isPresent() && account.get().isEnabled()
                     && passwordService.verifyWebPassword(password == null ? "" : password, account.get().getPasswordHash())) {
                 SessionUtil.login(req, account.get());
+                // Adopt the account's saved language (if any) so it follows the user to this
+                // browser, overriding whatever was selected anonymously beforehand.
+                LocaleFilter.remember(req, resp, account.get().getLanguage());
                 resp.sendRedirect(req.getContextPath() + "/");
                 return;
             }

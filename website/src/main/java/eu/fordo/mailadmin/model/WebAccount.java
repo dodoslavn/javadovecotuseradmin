@@ -8,6 +8,7 @@ public class WebAccount {
     private String passwordHash;
     private Role role;
     private boolean enabled;
+    private String language;
     private Instant createdAt;
 
     public long getId() { return id; }
@@ -24,6 +25,10 @@ public class WebAccount {
 
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
+
+    /** Preferred UI language code (e.g. "cs"), or null to follow the browser/cookie. */
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

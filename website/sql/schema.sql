@@ -8,6 +8,7 @@ CREATE TABLE web_accounts (
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('ADMIN', 'USER') NOT NULL,
     enabled       BOOLEAN NOT NULL DEFAULT TRUE,
+    language      VARCHAR(8) NULL,      -- preferred UI language code; NULL = follow browser/cookie (see LocaleFilter)
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -58,7 +59,7 @@ CREATE TABLE schema_version (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT single_row CHECK (id = 1)
 ) ENGINE=InnoDB;
-INSERT INTO schema_version (id, version) VALUES (1, 4);
+INSERT INTO schema_version (id, version) VALUES (1, 5);
 
 -- Single-use, time-limited invite links. An admin generates one; whoever opens
 -- /invite?token=... chooses their own username + password and a web account is created with

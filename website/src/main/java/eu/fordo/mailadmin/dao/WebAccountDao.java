@@ -94,6 +94,16 @@ public class WebAccountDao {
         }
     }
 
+    public void setLanguage(long id, String language) throws SQLException {
+        String sql = "UPDATE web_accounts SET language = ? WHERE id = ?";
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, language);
+            ps.setLong(2, id);
+            ps.executeUpdate();
+        }
+    }
+
     public void setUsername(long id, String username) throws SQLException {
         String sql = "UPDATE web_accounts SET username = ? WHERE id = ?";
         try (Connection c = Database.getConnection();
@@ -120,6 +130,7 @@ public class WebAccountDao {
         a.setPasswordHash(rs.getString("password_hash"));
         a.setRole(Role.valueOf(rs.getString("role")));
         a.setEnabled(rs.getBoolean("enabled"));
+        a.setLanguage(rs.getString("language"));
         a.setCreatedAt(rs.getTimestamp("created_at").toInstant());
         return a;
     }
