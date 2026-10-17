@@ -78,18 +78,29 @@ public class DovecotAccountDao {
         }
     }
 
-    public long create(String username, String passwordHash, String status) throws SQLException {
-        String sql = "INSERT INTO dovecot_accounts (username, password_hash, status) VALUES (?, ?, ?)";
+    public long create(String username, String passwordHash, String status, String mailFolder) throws SQLException {
+        String sql = "INSERT INTO dovecot_accounts (username, password_hash, status, mail_folder) VALUES (?, ?, ?, ?)";
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, username);
             ps.setString(2, passwordHash);
             ps.setString(3, status);
+            ps.setString(4, mailFolder);
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 keys.next();
                 return keys.getLong(1);
             }
+        }
+    }
+
+    public void setMailFolder(long id, String mailFolder) throws SQLException {
+        String sql = "UPDATE dovecot_accounts SET mail_folder = ? WHERE id = ?";
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, mailFolder);
+            ps.setLong(2, id);
+            ps.executeUpdate();
         }
     }
 
@@ -129,6 +140,7 @@ public class DovecotAccountDao {
         a.setUsername(rs.getString("username"));
         a.setPasswordHash(rs.getString("password_hash"));
         a.setStatus(rs.getString("status"));
+        a.setMailFolder(rs.getString("mail_folder"));
         a.setCreatedAt(rs.getTimestamp("created_at").toInstant());
         a.setUpdatedAt(rs.getTimestamp("updated_at").toInstant());
         return a;

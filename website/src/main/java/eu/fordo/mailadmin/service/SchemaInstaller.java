@@ -26,7 +26,7 @@ import java.sql.Statement;
 public final class SchemaInstaller {
 
     /** Bump this and add a case in runMigration() whenever the schema changes. */
-    public static final int CURRENT_VERSION = 5;
+    public static final int CURRENT_VERSION = 6;
 
     private static final String[] MYSQL_TABLES = {
             """
@@ -46,6 +46,7 @@ public final class SchemaInstaller {
                 username      VARCHAR(190) NOT NULL UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 status        ENUM('active', 'disabled') NOT NULL DEFAULT 'active',
+                mail_folder   VARCHAR(255) NULL,
                 created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             ) ENGINE=InnoDB
@@ -126,6 +127,7 @@ public final class SchemaInstaller {
                 username      VARCHAR(190) NOT NULL UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 status        VARCHAR(10) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'disabled')),
+                mail_folder   VARCHAR(255) NULL,
                 created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
@@ -245,6 +247,9 @@ public final class SchemaInstaller {
                 case 4 -> { }
                 // Per-account preferred UI language (null = follow browser/cookie). See LocaleFilter.
                 case 5 -> st.execute("ALTER TABLE web_accounts ADD COLUMN language VARCHAR(8) NULL");
+                // Per-mailbox folder (Dovecot userdb mail location). Several addresses may share one
+                // folder (aliases). null = not set; the sync agent skips userdb lines without a folder.
+                case 6 -> st.execute("ALTER TABLE dovecot_accounts ADD COLUMN mail_folder VARCHAR(255) NULL");
                 default -> throw new IllegalStateException("No migration defined for schema version " + toVersion);
             }
         }

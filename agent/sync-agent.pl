@@ -63,7 +63,25 @@ sub build_dsn {
     return sprintf('DBI:MariaDB:database=%s;host=%s;port=%s', $name, $host, $cfg->{'db.port'} || 3306);
 }
 
-# --- The actual sync: pull accounts, write passdb, reload Dovecot. Returns (ok, detail). ---
+# Write @$lines to $path atomically: temp file in the same dir -> fsync-on-close -> rename.
+# Returns (1, undef) on success or (0, "reason"). Never edits the target in place, so a crash
+# mid-write can't leave Dovecot reading a half-written file.
+sub write_atomic {
+    my ($path, $lines) = @_;
+    my ($fh, $tmp_path) = eval { tempfile("$path.XXXXXX", UNLINK => 0) };
+    return (0, "tempfile failed: $@") unless $fh;
+    print $fh $_ for @$lines;
+    close $fh;
+    chmod 0640, $tmp_path;
+    unless (rename($tmp_path, $path)) {
+        my $err = $!;
+        unlink $tmp_path;
+        return (0, "rename into place failed: $err");
+    }
+    return (1, undef);
+}
+
+# --- The actual sync: pull accounts, write passdb (+ userdb), reload Dovecot. Returns (ok, detail). ---
 sub run_sync {
     my $dsn = build_dsn();
     my $dbh = eval {
@@ -75,7 +93,7 @@ sub run_sync {
 
     my $rows = eval {
         $dbh->selectall_arrayref(
-            "SELECT username, password_hash FROM dovecot_accounts WHERE status = 'active' ORDER BY username",
+            "SELECT username, password_hash, mail_folder FROM dovecot_accounts WHERE status = 'active' ORDER BY username",
         );
     };
     if (!$rows) {
@@ -85,22 +103,20 @@ sub run_sync {
     }
     $dbh->disconnect;
 
+    # passdb: username:password_hash, one active account per line.
     my $passdb_path = $cfg->{'dovecot.passdb_path'} or return (0, "dovecot.passdb_path not set in $CONFIG_PATH");
-    my ($fh, $tmp_path) = eval { tempfile("$passdb_path.XXXXXX", UNLINK => 0) };
-    if (!$fh) {
-        return (0, "tempfile failed: $@");
-    }
-    for my $row (@$rows) {
-        my ($username, $hash) = @$row;
-        print $fh "$username:$hash\n";
-    }
-    close $fh;
-    chmod 0640, $tmp_path;
+    my @passdb_lines = map { "$_->[0]:$_->[1]\n" } @$rows;
+    my ($ok, $err) = write_atomic($passdb_path, \@passdb_lines);
+    return (0, "passdb: $err") unless $ok;
 
-    unless (rename($tmp_path, $passdb_path)) {
-        my $err = $!;
-        unlink $tmp_path;
-        return (0, "rename into place failed: $err");
+    # userdb (optional): email:folder, only for accounts that have a folder set. Several
+    # addresses may share one folder — that's exactly how aliases map to a shared mailbox.
+    # Skipped entirely if dovecot.userdb_path isn't configured (backward compatible).
+    my $userdb_path = $cfg->{'dovecot.userdb_path'};
+    if (defined $userdb_path && $userdb_path ne '') {
+        my @userdb_lines = map { "$_->[0]:$_->[2]\n" } grep { defined $_->[2] && $_->[2] ne '' } @$rows;
+        ($ok, $err) = write_atomic($userdb_path, \@userdb_lines);
+        return (0, "userdb: $err") unless $ok;
     }
 
     my $reload_cmd = $cfg->{'dovecot.reload_command'} || 'doveadm reload';

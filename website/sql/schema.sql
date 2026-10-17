@@ -25,6 +25,7 @@ CREATE TABLE dovecot_accounts (
     username      VARCHAR(190) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     status        ENUM('active', 'disabled') NOT NULL DEFAULT 'active',
+    mail_folder   VARCHAR(255) NULL,     -- Dovecot userdb mail location; several addresses may share one (aliases). See MailFolder / sync-agent.
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -63,7 +64,7 @@ CREATE TABLE schema_version (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT single_row CHECK (id = 1)
 ) ENGINE=InnoDB;
-INSERT INTO schema_version (id, version) VALUES (1, 5);
+INSERT INTO schema_version (id, version) VALUES (1, 6);
 
 -- Single-use, time-limited invite links. An admin generates one; whoever opens
 -- /invite?token=... chooses their own username + password and a web account is created with

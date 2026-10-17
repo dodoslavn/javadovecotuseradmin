@@ -7,6 +7,7 @@ public class DovecotAccount {
     private String username;
     private String passwordHash;
     private String status; // "active" | "disabled"
+    private String mailFolder; // Dovecot userdb mail location; several addresses may share one
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -21,6 +22,9 @@ public class DovecotAccount {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getMailFolder() { return mailFolder; }
+    public void setMailFolder(String mailFolder) { this.mailFolder = mailFolder; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

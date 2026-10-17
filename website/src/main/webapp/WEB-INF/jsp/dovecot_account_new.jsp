@@ -36,6 +36,8 @@
                         <option value="<%= w.getId() %>"><%= w.getUsername() %></option>
                     <% } } %>
                 </select></label>
+            <label><%= msgs.get("mailAccounts.create.folder") %>
+                <input type="text" name="mailFolder" placeholder="<%= msgs.get("mailAccounts.folder.placeholder") %>"></label>
             <div class="checkbox-row">
                 <input type="checkbox" id="createDisabled" name="createDisabled" value="true">
                 <label for="createDisabled"><%= msgs.get("mailAccounts.create.disabled") %></label>

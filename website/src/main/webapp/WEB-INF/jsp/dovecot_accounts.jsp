@@ -50,6 +50,9 @@
                         <% } %>
                     </select></label>
 
+                <label><%= msgs.get("mailAccounts.field.folder") %>
+                    <input type="text" name="mailFolder" value="<%= a.getMailFolder() == null ? "" : a.getMailFolder() %>" placeholder="<%= msgs.get("mailAccounts.folder.placeholder") %>"></label>
+
                 <div class="account-card-footer">
                     <div class="checkbox-row">
                         <input type="checkbox" id="ma-active-<%= a.getId() %>" name="enabled" value="true" <%= active ? "checked" : "" %>>

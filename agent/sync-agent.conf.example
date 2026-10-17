@@ -42,6 +42,12 @@ rabbitmq.routingKey=account.changed
 # Where Dovecot's passwd-file passdb actually lives (dovecot -n | grep passdb).
 dovecot.passdb_path=/etc/dovecot/passdb
 
+# Optional: where to write the userdb mapping (one "email:folder" line per mailbox that has a
+# folder set — the website auto-derives one per address, aliases can share a folder). Leave unset
+# to skip writing it entirely (passdb-only, as before). Point it at the file your Dovecot userdb
+# passwd-file reads for mail locations.
+dovecot.userdb_path=/etc/dovecot/userdb
+
 # Command run after a successful passdb rewrite. Override only if "doveadm reload" isn't
 # right for this host's Dovecot setup (e.g. a non-standard service manager).
 dovecot.reload_command=doveadm reload
