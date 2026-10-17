@@ -2,10 +2,22 @@
 # this file holds a live DB password and RabbitMQ password, unlike the website's own
 # config.properties which is root:tomcat 660 — nothing but root needs to read this one).
 #
-# db.* — a narrowly-scoped MariaDB user with SELECT only on dovecot_accounts, nothing else.
-# Create it once on the DB host:
+# db.* — a narrowly-scoped read-only DB user with SELECT only on dovecot_accounts, nothing else.
+# db.system must match the website's db.system (see /etc/mailadmin/config.properties):
+#   mariadb | mysql  -> uses the DBD::MariaDB driver (apt: libdbd-mariadb-perl), default port 3306
+#   postgresql       -> uses the DBD::Pg driver      (apt: libdbd-pg-perl),      default port 5432
+# db.port may be omitted to take the default for the chosen system.
+#
+# Create the read-only user once on the DB host. For MariaDB/MySQL:
 #   CREATE USER 'mailsync'@'127.0.0.1' IDENTIFIED BY 'change-me';
 #   GRANT SELECT ON mailadmin.dovecot_accounts TO 'mailsync'@'127.0.0.1';
+# For PostgreSQL:
+#   CREATE USER mailsync WITH PASSWORD 'change-me';
+#   GRANT CONNECT ON DATABASE mailadmin TO mailsync;
+#   \c mailadmin
+#   GRANT USAGE ON SCHEMA public TO mailsync;
+#   GRANT SELECT ON dovecot_accounts TO mailsync;
+db.system=mariadb
 db.host=127.0.0.1
 db.port=3306
 db.name=mailadmin
@@ -14,12 +26,18 @@ db.password=change-me
 
 # rabbitmq.* — reuse the same broker/exchange the website is configured with on its
 # Server configuration page (see /etc/mailadmin/config.properties on the website host).
+# rabbitmq.exchange and rabbitmq.routingKey MUST match the website's values: the website
+# publishes change signals to that exchange with that routing key, and this agent binds its
+# queue to receive them. Leave routingKey blank/unset for the default, account.changed.
+# (The status reports this agent sends back use the fixed "sync.status" routing key, which the
+# website's consumer already listens for — nothing to configure for that direction.)
 rabbitmq.host=127.0.0.1
 rabbitmq.port=5672
 rabbitmq.vhost=/
 rabbitmq.username=mailadmin
 rabbitmq.password=change-me
 rabbitmq.exchange=mailacct.events
+rabbitmq.routingKey=account.changed
 
 # Where Dovecot's passwd-file passdb actually lives (dovecot -n | grep passdb).
 dovecot.passdb_path=/etc/dovecot/passdb

@@ -4,9 +4,10 @@
 #
 # Flow: consume "account.changed" signals from RabbitMQ (topic exchange, same broker/exchange
 # the website publishes to) -> debounce bursts of changes into one run -> read the current
-# active account list directly from MariaDB (a narrowly-scoped read-only DB user, separate
-# from the website's own credentials — this user can only SELECT from dovecot_accounts, so a
-# compromised agent can't read web_accounts or write anything) -> write passdb atomically
+# active account list directly from the app database (MariaDB, MySQL, or PostgreSQL — same
+# db.system choice as the website; a narrowly-scoped read-only DB user, separate from the
+# website's own credentials — this user can only SELECT from dovecot_accounts, so a compromised
+# agent can't read web_accounts or write anything) -> write passdb atomically
 # (temp file + rename, never edited in place) -> reload Dovecot -> publish an ok/error status
 # back on "sync.status" (same plain-text ok/error + detail convention the website already
 # consumes — see SyncStatusRabbitMqConsumer.java).
@@ -47,12 +48,24 @@ sub load_config {
 
 my $cfg = load_config();
 
+# Build the DBI DSN for the configured db.system. MariaDB and MySQL share the DBD::MariaDB
+# driver (it speaks both wire protocols); PostgreSQL uses DBD::Pg. The default (no db.system)
+# is mariadb, matching installs that predate multi-DB support. Mirrors DbSystem.java on the
+# website side — keep the accepted values in sync.
+sub build_dsn {
+    my $system = lc($cfg->{'db.system'} || 'mariadb');
+    my $name = $cfg->{'db.name'};
+    my $host = $cfg->{'db.host'};
+    if ($system eq 'postgresql') {
+        return sprintf('DBI:Pg:dbname=%s;host=%s;port=%s', $name, $host, $cfg->{'db.port'} || 5432);
+    }
+    # mariadb / mysql
+    return sprintf('DBI:MariaDB:database=%s;host=%s;port=%s', $name, $host, $cfg->{'db.port'} || 3306);
+}
+
 # --- The actual sync: pull accounts, write passdb, reload Dovecot. Returns (ok, detail). ---
 sub run_sync {
-    my $dsn = sprintf(
-        'DBI:MariaDB:database=%s;host=%s;port=%s',
-        $cfg->{'db.name'}, $cfg->{'db.host'}, $cfg->{'db.port'} || 3306,
-    );
+    my $dsn = build_dsn();
     my $dbh = eval {
         DBI->connect($dsn, $cfg->{'db.user'}, $cfg->{'db.password'}, { RaiseError => 1, AutoCommit => 1, PrintError => 0 });
     };
@@ -181,7 +194,9 @@ sub connect_and_consume {
                                     $channel->bind_queue(
                                         queue       => $queue,
                                         exchange    => $cfg->{'rabbitmq.exchange'},
-                                        routing_key => 'account.changed',
+                                        # Must match the website's rabbitmq.routingKey (what it
+                                        # publishes change signals with). Default account.changed.
+                                        routing_key => $cfg->{'rabbitmq.routingKey'} || 'account.changed',
                                         on_success  => sub {
                                             log_msg('INFO', 'Connected to RabbitMQ, waiting for account.changed signals');
                                             # no_ack: a lost signal just means the next change (or a manual
