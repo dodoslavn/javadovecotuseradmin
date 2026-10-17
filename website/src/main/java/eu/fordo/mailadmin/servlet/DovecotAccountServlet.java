@@ -5,6 +5,7 @@ import eu.fordo.mailadmin.dao.LinkDao;
 import eu.fordo.mailadmin.dao.WebAccountDao;
 import eu.fordo.mailadmin.model.DovecotAccount;
 import eu.fordo.mailadmin.model.WebAccount;
+import eu.fordo.mailadmin.service.AppConfig;
 import eu.fordo.mailadmin.service.AuditService;
 import eu.fordo.mailadmin.service.MailFolder;
 import eu.fordo.mailadmin.service.PasswordService;
@@ -31,8 +32,18 @@ public class DovecotAccountServlet extends HttpServlet {
     private final PasswordService passwordService = new PasswordService();
     private final AuditService auditService = new AuditService();
 
+    /**
+     * Whether this install lets the app manage each mailbox's folder (Dovecot userdb location).
+     * Off (mail.manageMailboxes=false) for installs where Dovecot derives the mail path itself —
+     * the folder field is then hidden and never written. Default on. See config.properties.
+     */
+    private static boolean manageMailboxes() {
+        return AppConfig.getBoolean("mail.manageMailboxes", true);
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setAttribute("manageMailboxes", manageMailboxes());
         if (req.getServletPath().endsWith("/new")) {
             try {
                 req.setAttribute("webAccounts", webAccountDao.findAll());
@@ -59,6 +70,7 @@ public class DovecotAccountServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setAttribute("manageMailboxes", manageMailboxes()); // so error re-renders keep the folder field state
         String action = req.getParameter("action");
         try {
             if ("create".equals(action)) {
@@ -102,15 +114,19 @@ public class DovecotAccountServlet extends HttpServlet {
             return;
         }
 
-        // Mailbox folder: use the admin's value if they typed one, else auto-derive from the
-        // address. Point several addresses at the same folder to make them share a mailbox.
-        String folderParam = req.getParameter("mailFolder");
-        String mailFolder = (folderParam == null || folderParam.isBlank())
-                ? MailFolder.derive(username) : folderParam.trim();
+        // Mailbox folder (only when this install manages mailboxes): the admin's value if they
+        // typed one, else auto-derive from the address. Point several addresses at the same folder
+        // to make them share a mailbox. When management is off, store null and hide the field.
+        String mailFolder = null;
+        if (manageMailboxes()) {
+            String folderParam = req.getParameter("mailFolder");
+            mailFolder = (folderParam == null || folderParam.isBlank())
+                    ? MailFolder.derive(username) : folderParam.trim();
+        }
 
         String hash = passwordService.hashDovecotPassword(password);
         long id = dovecotAccountDao.create(username, hash, createDisabled ? "disabled" : "active", mailFolder);
-        String detail = "username=" + username + " folder=" + mailFolder + (createDisabled ? " (created disabled)" : "");
+        String detail = "username=" + username + (mailFolder == null ? "" : " folder=" + mailFolder) + (createDisabled ? " (created disabled)" : "");
         auditService.record(req, "dovecot_account_created", "dovecot_account", id, detail);
 
         if (webAccountId != null) {
@@ -146,16 +162,19 @@ public class DovecotAccountServlet extends HttpServlet {
                     "webAccountId=" + webAccountId);
         }
 
-        // Mailbox folder: blank re-derives from the address (a mailbox always needs a location),
-        // so it can't be accidentally cleared. A change triggers a sync since it alters the userdb.
-        String folderParam = req.getParameter("mailFolder");
-        String newFolder = (folderParam == null || folderParam.isBlank())
-                ? MailFolder.derive(username) : folderParam.trim();
-        if (!java.util.Objects.equals(account.getMailFolder(), newFolder)) {
-            dovecotAccountDao.setMailFolder(id, newFolder);
-            auditService.record(req, "dovecot_account_folder_changed", "dovecot_account", id,
-                    "username=" + username + " folder=" + newFolder);
-            RabbitMqPublisher.publishIfAutoSyncEnabled("auto: folder changed for " + username);
+        // Mailbox folder (only when this install manages mailboxes): blank re-derives from the
+        // address (a mailbox always needs a location), so it can't be accidentally cleared. A
+        // change triggers a sync since it alters the userdb. When off, the folder is left untouched.
+        if (manageMailboxes()) {
+            String folderParam = req.getParameter("mailFolder");
+            String newFolder = (folderParam == null || folderParam.isBlank())
+                    ? MailFolder.derive(username) : folderParam.trim();
+            if (!java.util.Objects.equals(account.getMailFolder(), newFolder)) {
+                dovecotAccountDao.setMailFolder(id, newFolder);
+                auditService.record(req, "dovecot_account_folder_changed", "dovecot_account", id,
+                        "username=" + username + " folder=" + newFolder);
+                RabbitMqPublisher.publishIfAutoSyncEnabled("auto: folder changed for " + username);
+            }
         }
 
         boolean enabled = "true".equals(req.getParameter("enabled"));

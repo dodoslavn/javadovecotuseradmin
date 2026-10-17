@@ -52,6 +52,11 @@ public final class AppConfig {
         return v == null || v.isBlank() ? defaultValue : Integer.parseInt(v.trim());
     }
 
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        String v = props.getProperty(key);
+        return v == null || v.isBlank() ? defaultValue : "true".equalsIgnoreCase(v.trim());
+    }
+
     public static boolean isConfigFilePresent() {
         return Files.isReadable(CONFIG_PATH);
     }

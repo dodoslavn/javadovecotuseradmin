@@ -40,6 +40,22 @@
         <p class="muted" style="margin-top:1rem;"><%= msgs.get("serverConfig.mysqlReadOnlyHint") %> <code><%= (String) request.getAttribute("configFilePath") %></code></p>
     </div>
 
+    <% boolean manageMailboxes = (Boolean) request.getAttribute("manageMailboxes"); %>
+    <div class="section">
+        <h3><%= msgs.get("serverConfig.mailbox") %></h3>
+        <div class="setting">
+            <div class="setting-label"><%= msgs.get("serverConfig.mailbox.manage") %></div>
+            <div class="setting-control"><span class="badge"><%= manageMailboxes ? msgs.get("serverConfig.mailbox.on") : msgs.get("serverConfig.mailbox.off") %></span></div>
+        </div>
+        <% if (manageMailboxes) { %>
+        <div class="setting">
+            <div class="setting-label"><%= msgs.get("serverConfig.mailbox.base") %></div>
+            <div class="setting-control"><span class="setting-value"><%= request.getAttribute("mailFolderBase") %></span></div>
+        </div>
+        <% } %>
+        <p class="muted" style="margin-top:1rem;"><%= msgs.get("serverConfig.mailbox.hint") %> <code><%= (String) request.getAttribute("configFilePath") %></code></p>
+    </div>
+
     <div class="section">
         <div class="section-head">
             <h3><%= msgs.get("serverConfig.rabbitmq") %></h3>

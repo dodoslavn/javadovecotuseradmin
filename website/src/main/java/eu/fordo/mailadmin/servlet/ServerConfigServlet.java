@@ -51,6 +51,10 @@ public class ServerConfigServlet extends HttpServlet {
         req.setAttribute("dbUser", AppConfig.get("db.user", ""));
         req.setAttribute("dbPasswordSet", !AppConfig.get("db.password", "").isBlank());
 
+        boolean manageMailboxes = AppConfig.getBoolean("mail.manageMailboxes", true);
+        req.setAttribute("manageMailboxes", manageMailboxes);
+        req.setAttribute("mailFolderBase", AppConfig.get("mail.folderBase", "/var/vmail"));
+
         req.setAttribute("rmqHost", AppConfig.get("rabbitmq.host", ""));
         req.setAttribute("rmqPort", AppConfig.getInt("rabbitmq.port", 5672));
         req.setAttribute("rmqVhost", AppConfig.get("rabbitmq.vhost", ""));
